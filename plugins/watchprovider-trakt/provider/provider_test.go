@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -13,43 +15,41 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// Every RPC refuses to call Trakt until an administrator configures the app,
-// and says so without leaking what is configured.
-func TestMissingAppConfigIsReportedOnEveryRPC(t *testing.T) {
+// The device-code login works before an administrator sets up an app: an
+// empty or missing client ID falls back to the built-in public client.
+func TestEmptyAppConfigUsesTheBuiltInClient(t *testing.T) {
 	t.Parallel()
-	var requests atomic.Int32
-	upstream := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { requests.Add(1) }))
+	var mu sync.Mutex
+	var gotClientID string
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		mu.Lock()
+		gotClientID = body["client_id"]
+		mu.Unlock()
+		writeFixture(t, w, `{"device_code":"device-code","user_code":"USER1234","verification_url":"https://trakt.tv/activate","expires_in":600,"interval":5}`)
+	}))
 	defer upstream.Close()
 	server, _ := newTestServer(t, upstream)
-	device := server.DeviceAuthorization()
-	ctx := context.Background()
 
 	for name, config := range map[string]*pluginv1.WatchSyncProviderConfig{
-		"none":           nil,
-		"no client ID":   {SecretValues: map[string]string{configClientSecret: testClientSecret}},
-		"blank client":   {Values: map[string]string{configClientID: "  "}, SecretValues: map[string]string{configClientSecret: testClientSecret}},
-		"wrong key name": {Values: map[string]string{"client_id": testClientID}, SecretValues: map[string]string{"client_secret": testClientSecret}},
+		"none":         nil,
+		"blank client": {Values: map[string]string{configClientID: "  "}},
+		"wrong key":    {Values: map[string]string{"client_id": testClientID}},
 	} {
-		auth := authContext(testAccessToken)
-		auth.ProviderConfig = config
-		start, _ := device.Start(ctx, &pluginv1.WatchSyncDeviceAuthorizationServiceStartRequest{CapabilityId: capabilityID, ProviderConfig: config})
-		poll, _ := device.Poll(ctx, &pluginv1.WatchSyncDeviceAuthorizationServicePollRequest{CapabilityId: capabilityID, ProviderConfig: config, ProviderState: []byte(`{"device_code":"x"}`)})
-		refresh, _ := server.RefreshCredentials(ctx, &pluginv1.WatchSyncRefreshCredentialsRequest{Context: auth})
-		account, _ := server.GetAccount(ctx, &pluginv1.WatchSyncGetAccountRequest{Context: auth})
-		apply, _ := server.ApplyEvents(ctx, &pluginv1.WatchSyncApplyEventsRequest{Context: auth, Events: []*pluginv1.WatchSyncEvent{watchedMovie("h1", "1", time.Now())}})
-		list, _ := server.ListRemoteState(ctx, &pluginv1.WatchSyncListRemoteStateRequest{Context: auth})
-		for rpc, f := range map[string]*pluginv1.WatchSyncFault{
-			"Start": start.GetFault(), "Poll": poll.GetFault(), "RefreshCredentials": refresh.GetFault(),
-			"GetAccount": account.GetFault(), "ApplyEvents": apply.GetFault(), "ListRemoteState": list.GetFault(),
-		} {
-			if f.GetCode() != pluginv1.WatchSyncFaultCode_WATCH_SYNC_FAULT_CODE_PERMISSION_DENIED || f.GetSafeMessage() != notConfiguredMessage {
-				t.Errorf("%s %s: fault = %v", name, rpc, f)
-			}
-			requireNoSecrets(t, f.GetSafeMessage(), testClientID)
+		mu.Lock()
+		gotClientID = ""
+		mu.Unlock()
+		response, err := server.DeviceAuthorization().Start(context.Background(), &pluginv1.WatchSyncDeviceAuthorizationServiceStartRequest{CapabilityId: capabilityID, ProviderConfig: config})
+		if err != nil || response.GetFault() != nil {
+			t.Fatalf("%s: Start = %v, %v", name, response, err)
 		}
-	}
-	if requests.Load() != 0 {
-		t.Fatalf("upstream saw %d requests without app config", requests.Load())
+		mu.Lock()
+		used := gotClientID
+		mu.Unlock()
+		if used != defaultClientID {
+			t.Fatalf("%s: client_id = %q, want the built-in client", name, used)
+		}
 	}
 }
 

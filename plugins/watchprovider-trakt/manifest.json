@@ -1,6 +1,6 @@
 {
   "plugin_id": "community.watchprovider.trakt",
-  "version": "0.3.1-community",
+  "version": "0.4.0",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "supported_platforms": [
@@ -58,19 +58,19 @@
   "global_config_schema": [
     {
       "key": "app",
-      "title": "Trakt API app",
-      "description": "The Trakt API app this server signs in with. Every profile connection uses it.",
+      "title": "Trakt API app (optional)",
+      "description": "Optional. Leave blank to use the built-in public client; the device-code login works without an app.",
       "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\"},\"client_secret\":{\"type\":\"string\"}},\"additionalProperties\":false}",
-      "required": true,
+      "required": false,
       "admin_form": {
         "submit_label": "Save Trakt app",
         "fields": [
           {
             "key": "client_id",
             "label": "Client ID",
-            "description": "Client ID of your Trakt API app.",
+            "description": "Leave blank to use the built-in public client. Set a client ID only to use your own Trakt API app.",
             "control": "ADMIN_FORM_CONTROL_TEXT",
-            "required": true
+            "required": false
           },
           {
             "key": "client_secret",
@@ -89,7 +89,7 @@
     "display_name": "Trakt Watch Provider",
     "summary": "Sync Silo watch activity, lists, ratings, and dropped shows with Trakt.",
     "description_markdown": "Imports watched movies and episodes, resume progress, favorites, the watchlist, movie and show ratings, and dropped shows from Trakt. Exports completed plays, unwatched titles, favorites, watchlist changes, ratings, and dropped shows, and forwards live playback start, pause, and stop events.",
-    "setup_markdown": "Create an API app at [trakt.tv/oauth/applications](https://trakt.tv/oauth/applications) with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its client ID and client secret below. Each Silo profile then connects its own Trakt account from its watch-provider settings by entering a code at trakt.tv/activate.",
+    "setup_markdown": "Install the plugin. Each Silo profile connects its own Trakt account from its watch-provider settings: click Connect, open https://trakt.tv/activate, and enter the code shown. No Trakt app setup is needed; the plugin ships with a public client. To use your own app, create one at https://trakt.tv/oauth/applications with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its client ID and secret below.",
     "homepage_url": "https://trakt.tv",
     "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
     "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",

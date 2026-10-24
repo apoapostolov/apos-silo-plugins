@@ -27,20 +27,20 @@ The plugin keeps to Trakt's rate limits for each connection: one write per secon
 Add this catalog URL under **Admin → Plugins → Repositories**:
 
 ```
-https://raw.githubusercontent.com/apoapostolov/silo-plugin-watchprovider-trakt/main/repository.json
+https://raw.githubusercontent.com/apoapostolov/apos-silo-plugins/main/repository.json
 ```
 
-Then install **Trakt Watch Provider** (`community.watchprovider.trakt`) from the catalog. The catalog points at the binaries in the [v0.3.0-community release](https://github.com/apoapostolov/apos-silo-plugins/plugins/watchprovider-trakt/releases/tag/v0.3.0-community) and pins their SHA-256 checksums.
+Then install **Trakt Watch Provider** (`community.watchprovider.trakt`) from the catalog. The catalog points at the binaries in the [latest release](https://github.com/apoapostolov/apos-silo-plugins/releases) and pins their SHA-256 checksums.
 
 To install without a catalog, download the binary for the server platform from the release and upload it under **Admin → Plugins**.
 
 ## Setup
 
-1. Create an API app at [trakt.tv/oauth/applications/new](https://trakt.tv/oauth/applications/new). Trakt requires a redirect URI; enter `urn:ietf:wg:oauth:2.0:oob`. Device sign-in does not use it.
-2. Open the installed plugin's settings and enter the app's **Client ID** and **Client secret**. Every profile on the server connects through this one app.
-3. Each profile connects its own Trakt account from its watch-provider settings.
+1. Install the plugin.
+2. Each profile connects its own Trakt account from its watch-provider settings: click **Connect**, open https://trakt.tv/activate, and enter the code shown. The plugin ships with a public client, so no Trakt app setup is needed.
+3. Optional: to use your own Trakt API app, create one at [trakt.tv/oauth/applications/new](https://trakt.tv/oauth/applications/new) with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its **Client ID** and **Client secret** in the plugin settings. Every profile then connects through that app.
 
-Until the client ID and secret are set, every Trakt request fails with a message asking an administrator to configure the plugin.
+The device-code login is the primary method and works before any app is configured. Set an app only when you need your own rate limits or credentials.
 
 ## Upgrading from Silo's built-in Trakt provider
 

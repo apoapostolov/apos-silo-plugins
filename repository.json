@@ -3,7 +3,7 @@
     {
       "manifest": {
         "plugin_id": "community.watchprovider.trakt",
-        "version": "0.3.1-community",
+        "version": "0.4.0",
         "silo_api_version": "v1",
         "supported_platforms": [
           {
@@ -60,19 +60,19 @@
         "global_config_schema": [
           {
             "key": "app",
-            "title": "Trakt API app",
-            "description": "The Trakt API app this server signs in with. Every profile connection uses it.",
+            "title": "Trakt API app (optional)",
+            "description": "Optional. Leave blank to use the built-in public client; the device-code login works without an app.",
             "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\"},\"client_secret\":{\"type\":\"string\"}},\"additionalProperties\":false}",
-            "required": true,
+            "required": false,
             "admin_form": {
               "submit_label": "Save Trakt app",
               "fields": [
                 {
                   "key": "client_id",
                   "label": "Client ID",
-                  "description": "Client ID of your Trakt API app.",
+                  "description": "Leave blank to use the built-in public client. Set a client ID only to use your own Trakt API app.",
                   "control": 1,
-                  "required": true
+                  "required": false
                 },
                 {
                   "key": "client_secret",
@@ -91,7 +91,7 @@
           "display_name": "Trakt Watch Provider",
           "summary": "Sync Silo watch activity, lists, ratings, and dropped shows with Trakt.",
           "description_markdown": "Imports watched movies and episodes, resume progress, favorites, the watchlist, movie and show ratings, and dropped shows from Trakt. Exports completed plays, unwatched titles, favorites, watchlist changes, ratings, and dropped shows, and forwards live playback start, pause, and stop events.",
-          "setup_markdown": "Create an API app at [trakt.tv/oauth/applications](https://trakt.tv/oauth/applications) with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its client ID and client secret below. Each Silo profile then connects its own Trakt account from its watch-provider settings by entering a code at trakt.tv/activate.",
+          "setup_markdown": "Install the plugin. Each Silo profile connects its own Trakt account from its watch-provider settings: click Connect, open https://trakt.tv/activate, and enter the code shown. No Trakt app setup is needed; the plugin ships with a public client. To use your own app, create one at https://trakt.tv/oauth/applications with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its client ID and secret below.",
           "homepage_url": "https://trakt.tv",
           "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
           "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
@@ -104,16 +104,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.1/trakt-linux-amd64",
-          "checksum": "e1c983ccd46b7971fd5444a8475d6172b1261d1a7198a1de091e668428430187"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.2/trakt-linux-amd64",
+          "checksum": "54267b3f0459e1518e98315fb2c4658752fb0fbf1f43217349e64ffeb49fe62b"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.1/trakt-linux-arm64",
-          "checksum": "6db282d507f7e0dfd133a2b212ed736646d53c222c81932b8ebf2e1a327b578a"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.2/trakt-linux-arm64",
+          "checksum": "b791abbccaa2238d773fb528a0f1f5c18271d66e27822b4b07fae6aeb1ba6be1"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.1/trakt-darwin-arm64",
-          "checksum": "056901dd6cd691d5724fa837fdd39fad53c9ab8e08697b345faf8d1c05d58482"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.2/trakt-darwin-arm64",
+          "checksum": "c675bf3f8dc29c7303cdee2911679e86fbb4b0bb90368ff14b62d7bd901e2fb0"
         }
       }
     },
@@ -323,16 +323,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.1/comicinfo-linux-amd64",
-          "checksum": "a241a575e41a6060b1b9c2fc7373eaa6a06ad881c180bda59674fa52e3cb2ab3"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.2/comicinfo-linux-amd64",
+          "checksum": "067ff01d1dc94beb2a47e0b997bffbaeedd4fea321076ebb0c6957f8bc8d5858"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.1/comicinfo-linux-arm64",
-          "checksum": "d7d6c2f3217d16a6112aaac7e394dcba8b6f3ae2ee1ad624bb47806b5e1a81fb"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.2/comicinfo-linux-arm64",
+          "checksum": "1d3452e37464ee82036d607a3841db2b46347ecfdb7451d8554628a9acd89dd9"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.1/comicinfo-darwin-arm64",
-          "checksum": "72ac22a98e0251e95e6f1630a07790103c03e5e11b004c20af2dbabf3d1d5f8f"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.2/comicinfo-darwin-arm64",
+          "checksum": "869d998b7c36d0a7ec708a83020126a69aea64376bfab10fec518f5cf650de8b"
         }
       }
     }

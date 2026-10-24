@@ -17,14 +17,18 @@ const (
 	configClientID     = "app.client_id"
 	configClientSecret = "app.client_secret"
 
+	// defaultClientID is a public Trakt API client. It lets the device-code
+	// login work before an administrator sets up an app. Set an app in the
+	// plugin settings to use different credentials.
+	defaultClientID = "e9286c08d7a3c84d4df03cf47a9dc464b8b0142844f83f4c4226b9a96e6c49d1"
+
 	// An RPC stops starting upstream work after syncBudget, or earlier so that
 	// its last request, bounded by defaultRequestTimeout, still ends
 	// syncDeadlineMargin before the host's two-minute deadline.
 	syncBudget         = 90 * time.Second
 	syncDeadlineMargin = 10 * time.Second
 
-	notConfiguredMessage = "Trakt is not set up on this server: an administrator must enter the Trakt app's client ID and client secret in the plugin settings"
-	timeLimitMessage     = "Trakt sync time limit reached; the event will be retried"
+	timeLimitMessage = "Trakt sync time limit reached; the event will be retried"
 )
 
 // Server implements the watch-sync provider for Trakt. It keeps no state
@@ -110,7 +114,7 @@ func appConfigFrom(config *pluginv1.WatchSyncProviderConfig) (appConfig, *plugin
 	}
 	app := appConfig{clientID: lookup(configClientID), clientSecret: lookup(configClientSecret)}
 	if app.clientID == "" {
-		return appConfig{}, newFault(pluginv1.WatchSyncFaultCode_WATCH_SYNC_FAULT_CODE_PERMISSION_DENIED, notConfiguredMessage)
+		app.clientID = defaultClientID
 	}
 	return app, nil
 }
