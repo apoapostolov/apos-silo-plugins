@@ -1,0 +1,203 @@
+{
+  "plugin_id": "silo.comicinfo-metadata",
+  "version": "0.1.0",
+  "checksum": "__CHECKSUM__",
+  "silo_api_version": "v1",
+  "presentation": {
+    "display_name": "ComicInfo Metadata",
+    "summary": "Recognize western comics by their embedded ComicInfo.xml and enrich series and issues with metadata, creators, and publication details.",
+    "description_markdown": "Reads the ComicInfo.xml file embedded in CBZ/CBR archives (as defined by the Anansi Project) and maps its fields onto Silo metadata: title, series, number, count, volume, summary, creators, publisher, genres, tags, characters, teams, locations, age rating, and page info.",
+    "setup_markdown": "Install the plugin and add ComicInfo Metadata to a comic library's provider chain. No external accounts or API keys are required; metadata is read directly from the archive.",
+    "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
+    "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
+    "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
+    "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
+    "publisher_name": "apoapostolov",
+    "publisher_url": "https://github.com/apoapostolov",
+    "license_spdx": "MIT"
+  },
+  "supported_platforms": [
+    {
+      "os": "linux",
+      "arch": "amd64"
+    },
+    {
+      "os": "linux",
+      "arch": "arm64"
+    },
+    {
+      "os": "darwin",
+      "arch": "arm64"
+    }
+  ],
+  "capabilities": [
+    {
+      "type": "metadata_provider.v1",
+      "id": "comicinfo-metadata",
+      "display_name": "ComicInfo Metadata",
+      "description": "Reads embedded ComicInfo.xml from western comic archives to populate metadata, creators, and publication details.",
+      "metadata": {
+        "default_priority": {
+          "comic": 1
+        }
+      }
+    }
+  ],
+  "global_config_schema": [
+    {
+      "key": "enable_gcd",
+      "title": "Grand Comics Database",
+      "description": "Use a local GCD SQLite dump for offline matching. Default on when a path is set.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Enable GCD",
+            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "default_value": true
+          }
+        ]
+      }
+    },
+    {
+      "key": "gcd_dump_path",
+      "title": "GCD database path",
+      "description": "Full path to the extracted GCD SQLite .db file (e.g. /config/gcd.db). Required to use GCD.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Database path",
+            "control": "ADMIN_FORM_CONTROL_TEXT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "gcd_dump_url",
+      "title": "GCD dump download URL",
+      "description": "Optional direct download URL for the GCD SQLite dump. comics.org requires a free account, so paste the authenticated download link.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Download URL",
+            "control": "ADMIN_FORM_CONTROL_TEXT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "gcd_dump_cookie",
+      "title": "GCD download cookie",
+      "description": "Optional Cookie header sent with the dump download (session auth). Stored encrypted by Silo.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Cookie",
+            "control": "ADMIN_FORM_CONTROL_TEXT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "gcd_refresh_hours",
+      "title": "GCD dump refresh (hours)",
+      "description": "How often to re-download the GCD dump when a URL is set. Default 168 (weekly).",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Hours",
+            "control": "ADMIN_FORM_CONTROL_NUMBER",
+            "default_value": 168
+          }
+        ]
+      }
+    },
+    {
+      "key": "enable_comicvine",
+      "title": "ComicVine",
+      "description": "Query the ComicVine API for issue metadata. Requires a free API key.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Enable ComicVine",
+            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "default_value": true
+          }
+        ]
+      }
+    },
+    {
+      "key": "comicvine_api_key",
+      "title": "ComicVine API key",
+      "description": "Free key from https://comicvine.gamespot.com/api/. Stored encrypted by Silo.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "API key",
+            "control": "ADMIN_FORM_CONTROL_TEXT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "enable_metron",
+      "title": "Metron (last resort)",
+      "description": "Query Metron only after GCD and ComicVine fail. Off by default.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Enable Metron",
+            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "default_value": false
+          }
+        ]
+      }
+    },
+    {
+      "key": "metron_token",
+      "title": "Metron API token",
+      "description": "Token from your metron.cloud account page. Stored encrypted by Silo.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Token",
+            "control": "ADMIN_FORM_CONTROL_TEXT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "enable_filename",
+      "title": "Filename fallback",
+      "description": "Infer series, issue number, and year from the archive filename when nothing else matches.",
+      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+      "admin_form": {
+        "fields": [
+          {
+            "key": "value",
+            "label": "Enable filename parsing",
+            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "default_value": true
+          }
+        ]
+      }
+    }
+  ]
+}

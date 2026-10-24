@@ -1,0 +1,340 @@
+{
+  "plugins": [
+    {
+      "manifest": {
+        "plugin_id": "community.watchprovider.trakt",
+        "version": "0.3.1-community",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "watch_sync_provider.v1",
+            "id": "trakt",
+            "display_name": "Trakt",
+            "description": "Two-way watch history, resume progress, favorites, watchlist, movie and show ratings, and dropped shows, plus live scrobbling, for Trakt accounts.",
+            "watch_sync_provider": {
+              "auth_methods": [
+                3
+              ],
+              "export_watched": true,
+              "export_unwatched": true,
+              "import_watched": true,
+              "import_progress": true,
+              "import_favorites": true,
+              "export_favorites": true,
+              "remove_favorites": true,
+              "import_watchlist": true,
+              "export_watchlist": true,
+              "remove_watchlist": true,
+              "scrobble_playback": true,
+              "import_ratings": true,
+              "export_ratings": true,
+              "sync_dropped": true,
+              "supported_media_types": [
+                1,
+                2,
+                3
+              ],
+              "external_id_namespaces": [
+                "imdb",
+                "tmdb",
+                "tvdb"
+              ],
+              "max_batch_size": 100
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "app",
+            "title": "Trakt API app",
+            "description": "The Trakt API app this server signs in with. Every profile connection uses it.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\"},\"client_secret\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "required": true,
+            "admin_form": {
+              "submit_label": "Save Trakt app",
+              "fields": [
+                {
+                  "key": "client_id",
+                  "label": "Client ID",
+                  "description": "Client ID of your Trakt API app.",
+                  "control": 1,
+                  "required": true
+                },
+                {
+                  "key": "client_secret",
+                  "label": "Client secret",
+                  "description": "Client secret of your Trakt API app. Leave blank for a public client that signs in with the device code only.",
+                  "control": 3,
+                  "required": false,
+                  "secret": true
+                }
+              ]
+            }
+          }
+        ],
+        "category": "Watch Providers",
+        "presentation": {
+          "display_name": "Trakt Watch Provider",
+          "summary": "Sync Silo watch activity, lists, ratings, and dropped shows with Trakt.",
+          "description_markdown": "Imports watched movies and episodes, resume progress, favorites, the watchlist, movie and show ratings, and dropped shows from Trakt. Exports completed plays, unwatched titles, favorites, watchlist changes, ratings, and dropped shows, and forwards live playback start, pause, and stop events.",
+          "setup_markdown": "Create an API app at [trakt.tv/oauth/applications](https://trakt.tv/oauth/applications) with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its client ID and client secret below. Each Silo profile then connects its own Trakt account from its watch-provider settings by entering a code at trakt.tv/activate.",
+          "homepage_url": "https://trakt.tv",
+          "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
+          "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
+          "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
+          "publisher_name": "Apostol Apostolov",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.0/trakt-linux-amd64",
+          "checksum": "7ba355c2de157379efe50646d60377e225b5a96b1363ff636215d354b58e67c7"
+        },
+        "linux/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.0/trakt-linux-arm64",
+          "checksum": "f7d7dfa23ff99ffecedfd20366bbad129da701a2e51f0947264fa3e7958d9860"
+        },
+        "darwin/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.0/trakt-darwin-arm64",
+          "checksum": "c784b5356988e134c2e011c8c6f4ca788d757b7189c20d7c4ed61f923bf00ee1"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.comicinfo-metadata",
+        "version": "0.1.0",
+        "silo_api_version": "v1",
+        "presentation": {
+          "display_name": "ComicInfo Metadata",
+          "summary": "Recognize western comics by their embedded ComicInfo.xml and enrich series and issues with metadata, creators, and publication details.",
+          "description_markdown": "Reads the ComicInfo.xml file embedded in CBZ/CBR archives (as defined by the Anansi Project) and maps its fields onto Silo metadata: title, series, number, count, volume, summary, creators, publisher, genres, tags, characters, teams, locations, age rating, and page info.",
+          "setup_markdown": "Install the plugin and add ComicInfo Metadata to a comic library's provider chain. No external accounts or API keys are required; metadata is read directly from the archive.",
+          "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
+          "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
+          "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
+          "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
+          "publisher_name": "apoapostolov",
+          "publisher_url": "https://github.com/apoapostolov",
+          "license_spdx": "MIT"
+        },
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "comicinfo-metadata",
+            "display_name": "ComicInfo Metadata",
+            "description": "Reads embedded ComicInfo.xml from western comic archives to populate metadata, creators, and publication details.",
+            "metadata": {
+              "default_priority": {
+                "comic": 1
+              }
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "enable_gcd",
+            "title": "Grand Comics Database",
+            "description": "Use a local GCD SQLite dump for offline matching. Default on when a path is set.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable GCD",
+                  "control": 5,
+                  "default_value": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "gcd_dump_path",
+            "title": "GCD database path",
+            "description": "Full path to the extracted GCD SQLite .db file (e.g. /config/gcd.db). Required to use GCD.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Database path",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "gcd_dump_url",
+            "title": "GCD dump download URL",
+            "description": "Optional direct download URL for the GCD SQLite dump. comics.org requires a free account, so paste the authenticated download link.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Download URL",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "gcd_dump_cookie",
+            "title": "GCD download cookie",
+            "description": "Optional Cookie header sent with the dump download (session auth). Stored encrypted by Silo.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Cookie",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "gcd_refresh_hours",
+            "title": "GCD dump refresh (hours)",
+            "description": "How often to re-download the GCD dump when a URL is set. Default 168 (weekly).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Hours",
+                  "control": 4,
+                  "default_value": 168
+                }
+              ]
+            }
+          },
+          {
+            "key": "enable_comicvine",
+            "title": "ComicVine",
+            "description": "Query the ComicVine API for issue metadata. Requires a free API key.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable ComicVine",
+                  "control": 5,
+                  "default_value": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "comicvine_api_key",
+            "title": "ComicVine API key",
+            "description": "Free key from https://comicvine.gamespot.com/api/. Stored encrypted by Silo.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "enable_metron",
+            "title": "Metron (last resort)",
+            "description": "Query Metron only after GCD and ComicVine fail. Off by default.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable Metron",
+                  "control": 5,
+                  "default_value": false
+                }
+              ]
+            }
+          },
+          {
+            "key": "metron_token",
+            "title": "Metron API token",
+            "description": "Token from your metron.cloud account page. Stored encrypted by Silo.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Token",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "enable_filename",
+            "title": "Filename fallback",
+            "description": "Infer series, issue number, and year from the archive filename when nothing else matches.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable filename parsing",
+                  "control": 5,
+                  "default_value": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.0/comicinfo-linux-amd64",
+          "checksum": "2acafaaa82a8338de15f49a5a65aef87a8e9d4c12ce7955f538fa69d801e56d7"
+        },
+        "linux/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.0/comicinfo-linux-arm64",
+          "checksum": "994cbe0945091b122b0e98c9e9d01f902d8122ffeb388a3f43da4b3fab7ed13a"
+        },
+        "darwin/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.0/comicinfo-darwin-arm64",
+          "checksum": "458c3599be814179e64a4585c9063c1d45beffedbd2c88c8ef5803ec67932650"
+        }
+      }
+    }
+  ]
+}
