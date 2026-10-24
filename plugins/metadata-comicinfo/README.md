@@ -47,10 +47,21 @@ return nothing, and it is disabled by default.
 | `enable_filename` | on | Parse series/issue/year from the filename. |
 
 The GCD dump is published at https://www.comics.org/download/ and requires a
-free comics.org account. Download it once, extract the `.db` file, and point
-`gcd_dump_path` at it. The plugin can also fetch the dump from an
-authenticated URL on a schedule, mirroring the manga plugin's local-dump
-mode.
+free comics.org account.
+
+1. Sign in at https://www.comics.org.
+2. Open https://www.comics.org/download/, choose **Private Use**, and copy the
+   SQLite dump link into `gcd_dump_url`.
+3. In the browser DevTools, open **Network**, reload any comics.org page, open
+   the request headers, and copy the value of the **`sessionid`** cookie. Paste
+   it into `gcd_dump_cookie` as `sessionid=<value>`. If the download returns
+   403 (Cloudflare), paste the whole `Cookie` header instead, including
+   `cf_clearance` and `csrftoken`.
+4. Set `gcd_dump_path` to where the dump should be saved (for example
+   `/config/gcd.db`) and `gcd_refresh_hours` to the refresh interval.
+
+The dump is about 6 GB. The cookie is stored encrypted by Silo.
+
 
 ## Contents
 
