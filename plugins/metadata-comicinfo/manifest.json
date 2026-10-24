@@ -1,6 +1,6 @@
 {
   "plugin_id": "silo.comicinfo-metadata",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "presentation": {
@@ -154,8 +154,8 @@
     },
     {
       "key": "enable_metron",
-      "title": "Metron (last resort)",
-      "description": "Query Metron only after GCD and ComicVine fail. Off by default.",
+      "title": "Metron",
+      "description": "Query the Metron comic database. Off by default; requires an API token.",
       "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
       "admin_form": {
         "fields": [

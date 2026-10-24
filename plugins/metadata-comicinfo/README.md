@@ -8,8 +8,8 @@ publisher, imprint, genres, tags, characters, teams, locations, age rating,
 and page information.
 
 When the archive has no usable metadata, the plugin falls back to a chain of
-scrapers: a local Grand Comics Database (GCD) SQLite dump, ComicVine, and
-Metron as a distant last resort. Filename parsing fills gaps at the end.
+scrapers: a local Grand Comics Database (GCD) SQLite dump, ComicVine, Metron,
+and filename parsing.
 
 ## ComicInfo.xml
 
@@ -25,11 +25,11 @@ field reference: https://anansi-project.github.io
 | 1 | `ComicInfo.xml` | Embedded, offline | None |
 | 2 | Grand Comics Database | Local SQLite dump | `gcd_dump_path` (about 6 GB) |
 | 3 | ComicVine | REST API | `comicvine_api_key` (free) |
-| 4 | Metron | REST API | `metron_token`, off by default |
+| 4 | Metron | REST API | `metron_token` (optional) |
 | 5 | Filename | Offline heuristic | None |
 
-Metron is deliberately last: it is only queried after GCD and ComicVine
-return nothing, and it is disabled by default.
+Metron is optional and disabled by default. Enable it and add a token to
+include it in the chain; it sits after GCD and ComicVine.
 
 ## Configuration
 
@@ -42,7 +42,7 @@ return nothing, and it is disabled by default.
 | `gcd_refresh_hours` | 168 | Dump refresh interval when a URL is set. |
 | `enable_comicvine` | on | Query ComicVine. |
 | `comicvine_api_key` | — | Free ComicVine API key. |
-| `enable_metron` | off | Query Metron as last resort. |
+| `enable_metron` | off | Query Metron. |
 | `metron_token` | — | Metron API token. |
 | `enable_filename` | on | Parse series/issue/year from the filename. |
 
