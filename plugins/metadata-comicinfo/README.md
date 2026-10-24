@@ -1,7 +1,7 @@
 # silo-plugin-metadata-comicinfo
 
 A [Silo](https://github.com/Silo-Server/silo-server) metadata provider plugin
-for **western comics**. It recognizes a comic by the `ComicInfo.xml` file
+for **mainstream comics**. It recognizes a comic by the `ComicInfo.xml` file
 embedded inside its CBZ/CBR archive and maps that metadata onto the Silo
 library item: title, series, issue number, count, volume, summary, creators,
 publisher, imprint, genres, tags, characters, teams, locations, age rating,

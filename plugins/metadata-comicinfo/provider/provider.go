@@ -1,4 +1,4 @@
-// Package provider orchestrates metadata scrapers for western comics.
+// Package provider orchestrates metadata scrapers for mainstream comics.
 package provider
 
 import (

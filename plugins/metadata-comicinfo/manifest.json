@@ -1,11 +1,11 @@
 {
   "plugin_id": "silo.comicinfo-metadata",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "presentation": {
     "display_name": "ComicInfo Metadata",
-    "summary": "Recognize western comics by their embedded ComicInfo.xml and enrich series and issues with metadata, creators, and publication details.",
+    "summary": "Recognize mainstream comics by their embedded ComicInfo.xml and enrich series and issues with metadata, creators, and publication details.",
     "description_markdown": "Reads the ComicInfo.xml file embedded in CBZ/CBR archives (as defined by the Anansi Project) and maps its fields onto Silo metadata: title, series, number, count, volume, summary, creators, publisher, genres, tags, characters, teams, locations, age rating, and page info.",
     "setup_markdown": "Install the plugin, then add ComicInfo Metadata to a comic library's provider chain. Embedded ComicInfo.xml is read with no extra setup. Two optional online sources can be enabled:\n\n**ComicVine** \u2014 set `comicvine_api_key` to a free API key from https://comicvine.gamespot.com/api/.\n\n**Grand Comics Database (GCD)** \u2014 the plugin reads the official SQLite dump:\n1. Create a free account at https://www.comics.org and sign in.\n2. Open https://www.comics.org/download/, choose **Private Use**, and copy the SQLite dump link.\n3. Paste that link into `gcd_dump_url`.\n4. Open the browser DevTools, go to **Network**, reload any comics.org page, open the request headers, and copy the value of the **`sessionid`** cookie. Paste it into `gcd_dump_cookie` as `sessionid=<value>`. If the download returns 403 (Cloudflare), paste the whole Cookie header instead, including `cf_clearance` and `csrftoken`.\n5. Set `gcd_dump_path` to where the dump should be saved (for example `/config/gcd.db`) and `gcd_refresh_hours` to how often to refresh it.\n\nThe dump is about 6 GB. The cookie is stored encrypted by Silo.",
     "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
@@ -35,7 +35,7 @@
       "type": "metadata_provider.v1",
       "id": "comicinfo-metadata",
       "display_name": "ComicInfo Metadata",
-      "description": "Reads embedded ComicInfo.xml from western comic archives to populate metadata, creators, and publication details.",
+      "description": "Reads embedded ComicInfo.xml from mainstream comic archives to populate metadata, creators, and publication details.",
       "metadata": {
         "default_priority": {
           "comic": 1
