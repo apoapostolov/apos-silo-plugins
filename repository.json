@@ -3,7 +3,7 @@
     {
       "manifest": {
         "plugin_id": "community.watchprovider.trakt",
-        "version": "0.4.0",
+        "version": "0.4.1",
         "silo_api_version": "v1",
         "supported_platforms": [
           {
@@ -27,7 +27,7 @@
             "description": "Two-way watch history, resume progress, favorites, watchlist, movie and show ratings, and dropped shows, plus live scrobbling, for Trakt accounts.",
             "watch_sync_provider": {
               "auth_methods": [
-                3
+                "WATCH_SYNC_AUTH_METHOD_DEVICE_CODE"
               ],
               "export_watched": true,
               "export_unwatched": true,
@@ -44,9 +44,9 @@
               "export_ratings": true,
               "sync_dropped": true,
               "supported_media_types": [
-                1,
-                2,
-                3
+                "WATCH_SYNC_MEDIA_TYPE_MOVIE",
+                "WATCH_SYNC_MEDIA_TYPE_EPISODE",
+                "WATCH_SYNC_MEDIA_TYPE_SERIES"
               ],
               "external_id_namespaces": [
                 "imdb",
@@ -104,23 +104,23 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.3/trakt-linux-amd64",
-          "checksum": "54267b3f0459e1518e98315fb2c4658752fb0fbf1f43217349e64ffeb49fe62b"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/trakt-linux-amd64",
+          "checksum": "7bde5f4a138c2e0aff81cfb2b15ec0b3cb3cb5e3ad24296fea4ee29c0f7974c2"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.3/trakt-linux-arm64",
-          "checksum": "b791abbccaa2238d773fb528a0f1f5c18271d66e27822b4b07fae6aeb1ba6be1"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/trakt-linux-arm64",
+          "checksum": "77b399f068f4fa077917fe787d7ea063a0202ad7a4352f903708215c383c61a4"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.3/trakt-darwin-arm64",
-          "checksum": "c675bf3f8dc29c7303cdee2911679e86fbb4b0bb90368ff14b62d7bd901e2fb0"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/trakt-darwin-arm64",
+          "checksum": "c719334d55a6b0ad9fdbfb6a6e65fd3dcc8c9954e343a704d535e6dce88a9c61"
         }
       }
     },
     {
       "manifest": {
         "plugin_id": "silo.comicinfo-metadata",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "silo_api_version": "v1",
         "presentation": {
           "display_name": "ComicInfo Metadata",
@@ -174,7 +174,7 @@
                 {
                   "key": "value",
                   "label": "Enable GCD",
-                  "control": "ADMIN_FORM_CONTROL_SWITCH",
+                  "control": 5,
                   "default_value": true
                 }
               ]
@@ -190,7 +190,7 @@
                 {
                   "key": "value",
                   "label": "Database path",
-                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                  "control": 1
                 }
               ]
             }
@@ -205,7 +205,7 @@
                 {
                   "key": "value",
                   "label": "Enable ComicVine",
-                  "control": "ADMIN_FORM_CONTROL_SWITCH",
+                  "control": 5,
                   "default_value": true
                 }
               ]
@@ -221,7 +221,7 @@
                 {
                   "key": "value",
                   "label": "API key",
-                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "control": 3,
                   "secret": true
                 }
               ]
@@ -237,7 +237,7 @@
                 {
                   "key": "value",
                   "label": "Enable Metron",
-                  "control": "ADMIN_FORM_CONTROL_SWITCH",
+                  "control": 5,
                   "default_value": false
                 }
               ]
@@ -253,7 +253,7 @@
                 {
                   "key": "value",
                   "label": "Token",
-                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "control": 3,
                   "secret": true
                 }
               ]
@@ -269,7 +269,7 @@
                 {
                   "key": "value",
                   "label": "Enable filename parsing",
-                  "control": "ADMIN_FORM_CONTROL_SWITCH",
+                  "control": 5,
                   "default_value": true
                 }
               ]
@@ -280,16 +280,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.6/comicinfo-linux-amd64",
-          "checksum": "92dbfb8299d00a7d2b886f567d08750e7195e32f6dab305ea728035b300b3019"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/comicinfo-linux-amd64",
+          "checksum": "927e0862337cb1f6f5977b7c8021c02ad84a66fab31557426b3230effaf3f738"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.6/comicinfo-linux-arm64",
-          "checksum": "ff2013f407b04805b12bea971897049878094e78cce45db66f215430bcade89e"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/comicinfo-linux-arm64",
+          "checksum": "a05397216b294094bb063d3fd83ae648db7b1c3b7f9758b401ac91cc8557a3de"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.6/comicinfo-darwin-arm64",
-          "checksum": "39057427aab80715d8d985b46bdf070a1cb414ffc88ce6b1ed573eb0afe7a251"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/comicinfo-darwin-arm64",
+          "checksum": "08d69326d082202943f065fbb8a826d0a8f6fab5cc1f01fbb2ae4eb019918bda"
         }
       }
     },

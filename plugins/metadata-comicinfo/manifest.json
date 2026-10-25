@@ -1,6 +1,6 @@
 {
   "plugin_id": "silo.comicinfo-metadata",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "presentation": {
@@ -55,7 +55,7 @@
           {
             "key": "value",
             "label": "Enable GCD",
-            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "control": 5,
             "default_value": true
           }
         ]
@@ -71,7 +71,7 @@
           {
             "key": "value",
             "label": "Database path",
-            "control": "ADMIN_FORM_CONTROL_TEXT"
+            "control": 1
           }
         ]
       }
@@ -86,7 +86,7 @@
           {
             "key": "value",
             "label": "Enable ComicVine",
-            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "control": 5,
             "default_value": true
           }
         ]
@@ -102,7 +102,7 @@
           {
             "key": "value",
             "label": "API key",
-            "control": "ADMIN_FORM_CONTROL_PASSWORD",
+            "control": 3,
             "secret": true
           }
         ]
@@ -118,7 +118,7 @@
           {
             "key": "value",
             "label": "Enable Metron",
-            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "control": 5,
             "default_value": false
           }
         ]
@@ -134,7 +134,7 @@
           {
             "key": "value",
             "label": "Token",
-            "control": "ADMIN_FORM_CONTROL_PASSWORD",
+            "control": 3,
             "secret": true
           }
         ]
@@ -150,7 +150,7 @@
           {
             "key": "value",
             "label": "Enable filename parsing",
-            "control": "ADMIN_FORM_CONTROL_SWITCH",
+            "control": 5,
             "default_value": true
           }
         ]
