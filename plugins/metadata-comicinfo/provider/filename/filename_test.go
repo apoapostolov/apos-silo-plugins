@@ -152,3 +152,24 @@ func TestFetchServesTheSameParse(t *testing.T) {
 		t.Fatalf("a foreign provider id must answer nothing, got %+v %v", unknown, err)
 	}
 }
+
+// "(c2c)" carries a digit that is not an issue number, and the group and format
+// markers are not part of the series.
+func TestParseIgnoresDigitsInsideReleaseTags(t *testing.T) {
+	cases := []struct {
+		name   string
+		series string
+		number string
+		year   int
+	}{
+		{"Fogtown HC (2010) (c2c) (Minutemen-DTs).cbz", "Fogtown", "", 2010},
+		{"Fables 048 (2015) (Digital) (Zone-Empire).cbz", "Fables", "048", 2015},
+		{"Saga 001 (2012) (c2c) (the group).cbz", "Saga", "001", 2012},
+	}
+	for _, c := range cases {
+		series, number, year := Parse(c.name)
+		if series != c.series || number != c.number || year != c.year {
+			t.Errorf("%s = (%q, %q, %d), want (%q, %q, %d)", c.name, series, number, year, c.series, c.number, c.year)
+		}
+	}
+}

@@ -63,9 +63,12 @@ func Parse(name string) (series, number string, year int) {
 		}
 	}
 
-	// Drop bracketed groups and reprint volume markers: neither carries the
-	// issue, and both pollute the series when left in place.
-	base = yearRe.ReplaceAllString(base, " ")
+	// Drop every bracketed group and reprint volume markers: neither carries the
+	// issue, and both pollute the series when left in place. Stripping only the
+	// year was not enough — "(c2c)" put the digit 2 where the issue number
+	// belongs, so "Fogtown HC (2010) (c2c) (Minutemen-DTs)" became issue 2 of
+	// "Fogtown HC (c".
+	base = releaseTagRe.ReplaceAllString(base, " ")
 	base = volumeRe.ReplaceAllString(base, " ")
 	base = strings.Join(strings.Fields(base), " ")
 
@@ -124,6 +127,7 @@ func Parse(name string) (series, number string, year int) {
 func cleanSeries(value string) string {
 	value = strings.NewReplacer("–", "-", "—", "-").Replace(value)
 	value = releaseTagRe.ReplaceAllString(value, " ")
+	value = formatRe.ReplaceAllString(value, " ")
 	value = strings.Trim(value, " ._-#,")
 	value = strings.Join(strings.Fields(value), " ")
 	return strings.TrimSpace(value)
@@ -170,6 +174,11 @@ func presentationTitle(series, number, base string) string {
 // releaseTagRe matches the bracketed groups a release name carries: the year,
 // "(Digital)", "(TPB)", "(Zone-Empire)".
 var releaseTagRe = regexp.MustCompile(`[\(\[]\s*[^\)\]]*\s*[\)\]]`)
+
+// formatRe matches the format markers that sit in front of the release tags and
+// belong to neither the series nor the issue: "Fogtown HC" is the hardcover of
+// Fogtown.
+var formatRe = regexp.MustCompile(`(?i)\b(?:hc|tpb|ogn|digital|scan|c2c)\b`)
 
 func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
 	// The host admits a candidate and then asks for its metadata by provider id.
