@@ -3,7 +3,7 @@
     {
       "manifest": {
         "plugin_id": "community.watchprovider.trakt",
-        "version": "0.4.1",
+        "version": "0.4.2",
         "silo_api_version": "v1",
         "supported_platforms": [
           {
@@ -27,7 +27,7 @@
             "description": "Two-way watch history, resume progress, favorites, watchlist, movie and show ratings, and dropped shows, plus live scrobbling, for Trakt accounts.",
             "watch_sync_provider": {
               "auth_methods": [
-                "WATCH_SYNC_AUTH_METHOD_DEVICE_CODE"
+                3
               ],
               "export_watched": true,
               "export_unwatched": true,
@@ -44,9 +44,9 @@
               "export_ratings": true,
               "sync_dropped": true,
               "supported_media_types": [
-                "WATCH_SYNC_MEDIA_TYPE_MOVIE",
-                "WATCH_SYNC_MEDIA_TYPE_EPISODE",
-                "WATCH_SYNC_MEDIA_TYPE_SERIES"
+                1,
+                2,
+                3
               ],
               "external_id_namespaces": [
                 "imdb",
@@ -104,16 +104,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/watchprovider-trakt",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/trakt-linux-amd64",
-          "checksum": "7bde5f4a138c2e0aff81cfb2b15ec0b3cb3cb5e3ad24296fea4ee29c0f7974c2"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.8/trakt-linux-amd64",
+          "checksum": "dadfefe59c032aa4f846ccf74027d9fead9dfc2d9e8c033b98cf2f324e7f3ced"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/trakt-linux-arm64",
-          "checksum": "77b399f068f4fa077917fe787d7ea063a0202ad7a4352f903708215c383c61a4"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.8/trakt-linux-arm64",
+          "checksum": "b760374ef17a6d181b83b3722bb3977590655a5b88b68d8643e431b5efc6087c"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/trakt-darwin-arm64",
-          "checksum": "c719334d55a6b0ad9fdbfb6a6e65fd3dcc8c9954e343a704d535e6dce88a9c61"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.8/trakt-darwin-arm64",
+          "checksum": "04072988e4ef019b2a89f4fe0109d0ee7bbb21a1b95d0575b996a3d0a7a85d1e"
         }
       }
     },
@@ -280,16 +280,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/comicinfo-linux-amd64",
-          "checksum": "927e0862337cb1f6f5977b7c8021c02ad84a66fab31557426b3230effaf3f738"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.8/comicinfo-linux-amd64",
+          "checksum": "2633f5351bcc907b2460cccfeffb77758cad4365ae75a42e49ced257f535392d"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/comicinfo-linux-arm64",
-          "checksum": "a05397216b294094bb063d3fd83ae648db7b1c3b7f9758b401ac91cc8557a3de"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.8/comicinfo-linux-arm64",
+          "checksum": "53204098a6ac25ae993d85e63c897d828e02c4822ee3e3fe0e93be4fdb765a22"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.7/comicinfo-darwin-arm64",
-          "checksum": "08d69326d082202943f065fbb8a826d0a8f6fab5cc1f01fbb2ae4eb019918bda"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.8/comicinfo-darwin-arm64",
+          "checksum": "dbb20820b0b6bed659b815f35cf9b40077b678c0338f82841d92372c2d9c47b8"
         }
       }
     },
