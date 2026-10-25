@@ -1,6 +1,6 @@
 {
   "plugin_id": "community.watchprovider.trakt",
-  "version": "0.4.0",
+  "version": "0.1.0",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "supported_platforms": [
@@ -95,7 +95,7 @@
     "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
     "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
     "publisher_name": "Apostol Apostolov",
-    "publisher_url": "https://github.com/Silo-Server",
+    "publisher_url": "https://github.com/apoapostolov",
     "license_spdx": "AGPL-3.0-only"
   }
 }

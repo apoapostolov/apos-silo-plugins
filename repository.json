@@ -3,7 +3,7 @@
     {
       "manifest": {
         "plugin_id": "community.watchprovider.trakt",
-        "version": "0.4.0",
+        "version": "0.1.0",
         "silo_api_version": "v1",
         "supported_platforms": [
           {
@@ -97,7 +97,7 @@
           "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
           "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
           "publisher_name": "Apostol Apostolov",
-          "publisher_url": "https://github.com/Silo-Server",
+          "publisher_url": "https://github.com/apoapostolov",
           "license_spdx": "AGPL-3.0-only"
         }
       },
@@ -120,7 +120,7 @@
     {
       "manifest": {
         "plugin_id": "silo.comicinfo-metadata",
-        "version": "0.1.2",
+        "version": "0.1.0",
         "silo_api_version": "v1",
         "presentation": {
           "display_name": "ComicInfo Metadata",
@@ -131,7 +131,7 @@
           "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
           "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
           "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
-          "publisher_name": "apoapostolov",
+          "publisher_name": "Apostol Apostolov",
           "publisher_url": "https://github.com/apoapostolov",
           "license_spdx": "MIT"
         },
@@ -333,6 +333,101 @@
         "darwin/arm64": {
           "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.3/comicinfo-darwin-arm64",
           "checksum": "f79c7c4c26b9b593b24d1358e0519e265a08bf5882fd469cc02f09db3bd3094c"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.apple-podcasts-metadata",
+        "version": "0.1.0",
+        "silo_api_version": "v1",
+        "presentation": {
+          "display_name": "Apple Podcasts Metadata",
+          "summary": "Match podcast shows against the Apple Podcasts directory and fill in the description, publisher, genre, language, and square cover art.",
+          "description_markdown": "Reads the Apple Podcasts directory over Apple's public JSON API and each show's own RSS feed. Search returns directory matches by show name. Detail fills the show description, publisher, genres, language, first and latest episode dates, and an explicit flag. Artwork is served through an image resolver, so the shown poster is Apple's cover at whatever size Silo asks for instead of a low-resolution copy.",
+          "setup_markdown": "Install the plugin, then add **Apple Podcasts** to a podcast library's metadata provider chain. No account or API key is needed: the directory and the feeds are public.\n\n**Storefront** — set `country` to the two-letter Apple storefront to search (default `us`). A show carried only in one storefront is found only there.\n\nArtwork comes from Apple's image service at the size Silo requests, so nothing is stored locally beyond Silo's own artwork cache.",
+          "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
+          "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-apple-podcasts",
+          "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
+          "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
+          "publisher_name": "Apostol Apostolov",
+          "publisher_url": "https://github.com/apoapostolov",
+          "license_spdx": "MIT"
+        },
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "apple-podcasts",
+            "display_name": "Apple Podcasts",
+            "description": "Matches podcast shows to the Apple Podcasts directory and enriches them from each show's RSS feed.",
+            "metadata": {
+              "default_priority": {
+                "podcast": 1
+              },
+              "default_enabled": true
+            }
+          },
+          {
+            "type": "image_resolver.v1",
+            "id": "apple-podcasts",
+            "display_name": "Apple Podcasts Images",
+            "description": "Resolves apple-podcasts:// artwork paths to Apple's podcast cover images at the requested size.",
+            "metadata": {
+              "schemes": [
+                "apple-podcasts"
+              ],
+              "priority": 100
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "country",
+            "title": "Apple storefront",
+            "description": "Two-letter storefront to search, for example us, gb, de, bg. Default us.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"maxLength\":2,\"minLength\":2}}}",
+            "required": false,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Storefront",
+                  "description": "Two-letter Apple storefront code. Leave blank to use us.",
+                  "control": 1,
+                  "required": false
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-apple-podcasts",
+      "binaries": {
+        "darwin/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.1.0/apple-podcasts-darwin-arm64",
+          "checksum": "7d57199ad8c2bd87b83549e1e61ebbfebc3cf70031690ac4cd4cc1e2b0378928"
+        },
+        "linux/amd64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.1.0/apple-podcasts-linux-amd64",
+          "checksum": "2558fc7ac021fca6e1ebc51d68fe3113cef07dea9a7d313f092ceb9ce39256ee"
+        },
+        "linux/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.1.0/apple-podcasts-linux-arm64",
+          "checksum": "30d91f15609ba8fdc00e97546f8d4c7053e4a28939963d065360437f59487b9e"
         }
       }
     }

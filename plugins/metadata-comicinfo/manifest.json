@@ -1,6 +1,6 @@
 {
   "plugin_id": "silo.comicinfo-metadata",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "presentation": {
@@ -12,7 +12,7 @@
     "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
     "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
     "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
-    "publisher_name": "apoapostolov",
+    "publisher_name": "Apostol Apostolov",
     "publisher_url": "https://github.com/apoapostolov",
     "license_spdx": "MIT"
   },

@@ -18,8 +18,9 @@ the catalog.
 
 | Plugin | ID | Version | Capability | Source |
 |--------|----|---------|------------|--------|
-| Trakt Watch Provider | `community.watchprovider.trakt` | 0.3.0-community | `watch_sync_provider.v1` | [`plugins/watchprovider-trakt`](plugins/watchprovider-trakt) |
+| Trakt Watch Provider | `community.watchprovider.trakt` | 0.1.0 | `watch_sync_provider.v1` | [`plugins/watchprovider-trakt`](plugins/watchprovider-trakt) |
 | ComicInfo Metadata | `silo.comicinfo-metadata` | 0.1.0 | `metadata_provider.v1` | [`plugins/metadata-comicinfo`](plugins/metadata-comicinfo) |
+| Apple Podcasts Metadata | `silo.apple-podcasts-metadata` | 0.1.0 | `metadata_provider.v1`, `image_resolver.v1` | [`plugins/metadata-apple-podcasts`](plugins/metadata-apple-podcasts) |
 
 ## Build
 
@@ -28,6 +29,7 @@ Each plugin builds independently:
 ```bash
 cd plugins/watchprovider-trakt && make test && make build-all
 cd plugins/metadata-comicinfo    && make test && make build-all
+cd plugins/metadata-apple-podcasts && make test && make build-all
 ```
 
 `make build-all` writes `dist/plugin-<os>-<arch>` for linux/amd64,
