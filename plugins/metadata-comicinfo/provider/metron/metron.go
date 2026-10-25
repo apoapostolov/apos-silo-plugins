@@ -82,6 +82,11 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	if title == "" {
 		return nil, fmt.Errorf("metron: empty query")
 	}
+	// One issue per query: a name with no issue behind it cannot be answered, and
+	// asking anyway spends a rate-limited budget on nothing.
+	if strings.TrimSpace(q.Number) == "" {
+		return nil, nil
+	}
 	params := url.Values{}
 	params.Set("series_name", title)
 	if q.Number != "" {

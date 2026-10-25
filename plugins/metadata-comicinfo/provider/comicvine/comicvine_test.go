@@ -26,7 +26,7 @@ func TestSearchAndFetch(t *testing.T) {
 	defer srv.Close()
 
 	p := NewProviderWithClient(&Client{APIKey: "key", BaseURL: srv.URL, HTTPClient: srv.Client()})
-	matches, err := p.Search(metadata.SearchQuery{Series: "Test Series"})
+	matches, err := p.Search(metadata.SearchQuery{Series: "Test Series", Number: "1"})
 	if err != nil {
 		t.Fatalf("search: %v", err)
 	}

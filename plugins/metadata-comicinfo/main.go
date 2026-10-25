@@ -12,6 +12,7 @@ import (
 	"github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtime"
 	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/metadata"
 	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/provider"
+	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/provider/filename"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -123,6 +124,21 @@ func (s *server) Search(_ context.Context, req *pluginv1.SearchMetadataRequest) 
 	}
 	if filename := query.ProviderIDs["filename"]; filename != "" {
 		query.Filename = filename
+	}
+	// The network sources answer one issue at a time. The parse of the file name
+	// (or the title when there is no file name) supplies the series and issue
+	// that shape a query; without them a provider declines instead of spending
+	// its hourly budget on a name no issue list can answer.
+	parsedFrom := query.Filename
+	if parsedFrom == "" {
+		parsedFrom = query.Title
+	}
+	if series, number, year := filename.Parse(parsedFrom); strings.TrimSpace(number) != "" {
+		query.Series = series
+		query.Number = number
+		if query.Year == 0 {
+			query.Year = year
+		}
 	}
 
 	seen := make(map[string]struct{})

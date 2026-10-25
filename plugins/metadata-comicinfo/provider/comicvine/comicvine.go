@@ -99,7 +99,15 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	if title == "" {
 		return nil, fmt.Errorf("comicvine: empty query")
 	}
-	cacheKey := fmt.Sprintf("search|%s|%d", title, q.Year)
+	// A filename like "128. Justice League of America's Vibe #1-2, Katana #2
+	// (2011) (Digital) (TPB)" has no single issue behind it, and ComicVine
+	// cannot answer it. Spending budget on that shape is what exhausts the key
+	// before a single usable item is reached, so the caller's parse decides
+	// whether this provider is asked at all.
+	if strings.TrimSpace(q.Number) == "" {
+		return nil, nil
+	}
+	cacheKey := fmt.Sprintf("search|%s|%s|%d", title, q.Number, q.Year)
 	if cached, ok := p.cache.get(cacheKey); ok {
 		return cached, nil
 	}
@@ -112,9 +120,7 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	params.Set("query", title)
 	params.Set("resources", "issue")
 	params.Set("limit", "10")
-	if q.Year > 0 {
-		params.Set("filter", fmt.Sprintf("cover_date:%d-01-01|%d-12-31", q.Year, q.Year))
-	}
+	params.Set("filter", "issue_number:"+issueNumberFilter(q.Number))
 
 	req, err := http.NewRequest("GET", p.client.BaseURL+"/search/?"+params.Encode(), nil)
 	if err != nil {
@@ -193,11 +199,33 @@ func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
 
 func (p *Provider) Close() error { return nil }
 
+// issueNumberFilter turns a parsed issue number into the form ComicVine filters
+// on. File names are padded ("048") and the filter is not, so an unpadded value
+// would return nothing at all.
+func issueNumberFilter(number string) string {
+	number = strings.TrimPrefix(strings.TrimSpace(number), "#")
+	if number == "" {
+		return number
+	}
+	if trimmed := strings.TrimLeft(number, "0"); trimmed != "" {
+		return trimmed
+	}
+	return "0"
+}
+
 func toMatch(issue cvIssue) metadata.Match {
+	// The host scores a candidate against the title it derived for the item, so
+	// the title is the volume and issue the way a reader would name it. ComicVine
+	// puts the story name in "name", which is empty on plenty of issues and never
+	// matches an item title on its own.
+	title := strings.TrimSpace(strings.Join([]string{issue.Volume.Name, issue.IssueNumber}, " "))
+	if title == "" {
+		title = issue.Name
+	}
 	m := metadata.Match{
 		Provider:   "comicvine",
 		ProviderID: fmt.Sprintf("comicvine:%d", issue.ID),
-		Title:      issue.Name,
+		Title:      title,
 		Series:     issue.Volume.Name,
 		Number:     issue.IssueNumber,
 		Summary:    stripHTML(issue.Description),
