@@ -66,10 +66,23 @@ type cvResponse struct {
 
 type Provider struct {
 	client *Client
+	budget *budget
+	cache  *cache
 }
 
 func NewProvider(apiKey string) *Provider {
-	return &Provider{client: New(apiKey)}
+	return &Provider{client: New(apiKey), budget: newBudget(hourlyBudget, budgetWindow), cache: newCache()}
+}
+
+// limits lazily fills the gate so a provider built by a test with a bare client
+// still spends budget and caches its answers.
+func (p *Provider) limits() {
+	if p.budget == nil {
+		p.budget = newBudget(hourlyBudget, budgetWindow)
+	}
+	if p.cache == nil {
+		p.cache = newCache()
+	}
 }
 
 func (p *Provider) Name() string { return "comicvine" }
@@ -78,12 +91,20 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	if p.client.APIKey == "" {
 		return nil, fmt.Errorf("comicvine: missing API key")
 	}
+	p.limits()
 	title := q.Series
 	if title == "" {
 		title = q.Title
 	}
 	if title == "" {
 		return nil, fmt.Errorf("comicvine: empty query")
+	}
+	cacheKey := fmt.Sprintf("search|%s|%d", title, q.Year)
+	if cached, ok := p.cache.get(cacheKey); ok {
+		return cached, nil
+	}
+	if ok, wait := p.budget.take(); !ok {
+		return nil, fmt.Errorf("comicvine: hourly request budget spent, retry in %s (HTTP 429 semantics)", wait.Round(time.Minute))
 	}
 	params := url.Values{}
 	params.Set("api_key", p.client.APIKey)
@@ -105,6 +126,12 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	// ComicVine answers 420, not 429, when the key's hourly window is spent, and
+	// the window is shared with every other client using that key.
+	if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == 420 {
+		p.budget.exhaust()
+		return nil, fmt.Errorf("comicvine: HTTP %d, the API key is rate limited for this hour", resp.StatusCode)
+	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("comicvine: http %d: %s", resp.StatusCode, string(b))
@@ -121,12 +148,17 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	for _, issue := range r.Results {
 		out = append(out, toMatch(issue))
 	}
+	p.cache.put(cacheKey, out)
 	return out, nil
 }
 
 func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
 	if p.client.APIKey == "" {
 		return nil, fmt.Errorf("comicvine: missing API key")
+	}
+	p.limits()
+	if ok, wait := p.budget.take(); !ok {
+		return nil, fmt.Errorf("comicvine: hourly request budget spent, retry in %s (HTTP 429 semantics)", wait.Round(time.Minute))
 	}
 	id := strings.TrimPrefix(providerID, "comicvine:")
 	params := url.Values{}

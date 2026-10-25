@@ -12,6 +12,8 @@ import (
 	"github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtime"
 	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/metadata"
 	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/provider"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -125,7 +127,8 @@ func (s *server) Search(_ context.Context, req *pluginv1.SearchMetadataRequest) 
 
 	seen := make(map[string]struct{})
 	results := make([]*pluginv1.ProviderSearchResult, 0, maxResults)
-	for _, matches := range manager.SearchAll(query) {
+	matchesByProvider, failures := manager.SearchAll(query)
+	for _, matches := range matchesByProvider {
 		for _, match := range matches {
 			providerID := strings.TrimSpace(match.ProviderID)
 			if providerID == "" {
@@ -141,7 +144,21 @@ func (s *server) Search(_ context.Context, req *pluginv1.SearchMetadataRequest) 
 			}
 		}
 	}
+	if len(results) == 0 && len(failures) > 0 {
+		// An unanswered source is not an empty answer: report it so the host
+		// treats the item as transiently unmatched and asks again, instead of
+		// recording "no match" for something a rate-limited provider never saw.
+		return nil, status.Error(codes.Unavailable, strings.Join(errorStrings(failures), "; "))
+	}
 	return &pluginv1.SearchMetadataResponse{Results: results}, nil
+}
+
+func errorStrings(failures []error) []string {
+	out := make([]string, 0, len(failures))
+	for _, err := range failures {
+		out = append(out, err.Error())
+	}
+	return out
 }
 
 func (s *server) GetMetadata(_ context.Context, req *pluginv1.GetMetadataRequest) (*pluginv1.GetMetadataResponse, error) {

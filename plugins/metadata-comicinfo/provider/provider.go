@@ -2,6 +2,7 @@
 package provider
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -58,29 +59,44 @@ func NewManager(opts Options) *Manager {
 	return m
 }
 
-// Search tries providers in priority order and returns the first non-empty result.
+// Search tries providers in priority order and returns the first non-empty
+// result. A provider that fails is reported rather than skipped: a rate-limited
+// source and a source with no answer are not the same finding, and swallowing
+// the difference marks items as unmatched when they should be retried.
 func (m *Manager) Search(q metadata.SearchQuery) ([]metadata.Match, metadata.Provider, error) {
+	var failures []error
 	for _, p := range m.providers {
 		matches, err := p.Search(q)
 		if err != nil {
+			failures = append(failures, fmt.Errorf("%s: %w", p.Name(), err))
 			continue
 		}
 		if len(matches) > 0 {
 			return matches, p, nil
 		}
 	}
+	if len(failures) > 0 {
+		return nil, nil, errors.Join(failures...)
+	}
 	return nil, nil, fmt.Errorf("no matches from any provider")
 }
 
-// SearchAll returns results from all providers (for aggregation).
-func (m *Manager) SearchAll(q metadata.SearchQuery) map[string][]metadata.Match {
+// SearchAll returns results from all providers (for aggregation), along with the
+// failures, so the caller can tell an empty answer from an unanswered one.
+func (m *Manager) SearchAll(q metadata.SearchQuery) (map[string][]metadata.Match, []error) {
 	out := map[string][]metadata.Match{}
+	var failures []error
 	for _, p := range m.providers {
-		if matches, err := p.Search(q); err == nil && len(matches) > 0 {
+		matches, err := p.Search(q)
+		if err != nil {
+			failures = append(failures, fmt.Errorf("%s: %w", p.Name(), err))
+			continue
+		}
+		if len(matches) > 0 {
 			out[p.Name()] = matches
 		}
 	}
-	return out
+	return out, failures
 }
 
 // Fetch returns full metadata for a provider item key such as

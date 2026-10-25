@@ -1,0 +1,123 @@
+package comicvine
+
+import (
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/metadata"
+)
+
+func TestBudgetStopsAtTheLimitAndReopensWithTheWindow(t *testing.T) {
+	now := time.Date(2026, 10, 25, 18, 0, 0, 0, time.UTC)
+	b := newBudget(2, time.Hour)
+	b.now = func() time.Time { return now }
+
+	for i := 0; i < 2; i++ {
+		if ok, wait := b.take(); !ok {
+			t.Fatalf("request %d refused, wait %s", i+1, wait)
+		}
+	}
+	ok, wait := b.take()
+	if ok {
+		t.Fatal("a third request was allowed past a budget of two")
+	}
+	if wait != time.Hour {
+		t.Fatalf("wait = %s, want the rest of the window", wait)
+	}
+
+	now = now.Add(time.Hour)
+	if ok, _ := b.take(); !ok {
+		t.Fatal("the window did not reopen")
+	}
+}
+
+func TestSearchCachesASeriesAndSpendsOneRequest(t *testing.T) {
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		io.WriteString(w, `{"error":"OK","results":[{"id":42,"name":"Fables","issue_number":"48","volume":{"id":7,"name":"Fables"},"cover_date":"2006-06-01"}]}`)
+	}))
+	defer server.Close()
+
+	p := NewProviderWithClient(&Client{APIKey: "key", BaseURL: server.URL, HTTPClient: server.Client()})
+	for i := 0; i < 3; i++ {
+		matches, err := p.Search(metadata.SearchQuery{Series: "Fables", Year: 2006})
+		if err != nil {
+			t.Fatalf("search %d: %v", i+1, err)
+		}
+		if len(matches) != 1 || matches[0].ProviderID != "comicvine:42" {
+			t.Fatalf("search %d: %+v", i+1, matches)
+		}
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Fatalf("server saw %d requests, want 1: the repeats came from the cache", got)
+	}
+}
+
+func TestSearchRefusesOnceTheBudgetIsSpent(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, `{"error":"OK","results":[]}`)
+	}))
+	defer server.Close()
+
+	p := NewProviderWithClient(&Client{APIKey: "key", BaseURL: server.URL, HTTPClient: server.Client()})
+	p.budget = newBudget(1, time.Hour)
+
+	if _, err := p.Search(metadata.SearchQuery{Title: "Fables 048"}); err != nil {
+		t.Fatalf("first search: %v", err)
+	}
+	_, err := p.Search(metadata.SearchQuery{Title: "Hellblazer 074"})
+	if err == nil {
+		t.Fatal("a second search passed a budget of one")
+	}
+	if !strings.Contains(err.Error(), "429") {
+		t.Fatalf("error %q must name the rate limit so the host can retry it", err)
+	}
+}
+
+// ComicVine answers 420, not 429, when the key's hourly window is spent, and the
+// window is shared with every other client using that key.
+func TestA420StopsTheProviderSpendingMore(t *testing.T) {
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		w.WriteHeader(420)
+		io.WriteString(w, "{\"error\":\"Rate limit exceeded.  Slow down cowboy.\",\"status_code\":107}")
+	}))
+	defer server.Close()
+
+	p := NewProviderWithClient(&Client{APIKey: "key", BaseURL: server.URL, HTTPClient: server.Client()})
+	_, err := p.Search(metadata.SearchQuery{Title: "Fables 048"})
+	if err == nil || !strings.Contains(err.Error(), "420") {
+		t.Fatalf("err = %v, want it to name HTTP 420", err)
+	}
+	for _, title := range []string{"Hellblazer 074", "100 Bullets 003"} {
+		if _, err := p.Search(metadata.SearchQuery{Title: title}); err == nil {
+			t.Fatalf("%s was answered after the key said 420", title)
+		}
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Fatalf("server saw %d requests after a 420, want 1", got)
+	}
+}
+
+func TestFetchSpendsBudgetAndAnswersTheIssue(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, `{"error":"OK","results":{"id":42,"name":"Fables","issue_number":"48","volume":{"id":7,"name":"Fables"},"publisher":{"id":10,"name":"DC Comics"},"cover_date":"2006-06-01"}}`)
+	}))
+	defer server.Close()
+
+	p := NewProviderWithClient(&Client{APIKey: "key", BaseURL: server.URL, HTTPClient: server.Client()})
+	match, err := p.Fetch("comicvine:42")
+	if err != nil {
+		t.Fatalf("fetch: %v", err)
+	}
+	if match == nil || match.Series != "Fables" || match.Number != "48" || match.Publisher != "DC Comics" || match.Year != 2006 {
+		t.Fatalf("fetch = %+v", match)
+	}
+}
