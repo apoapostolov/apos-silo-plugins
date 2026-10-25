@@ -81,6 +81,7 @@ jobs:
           import json
           import pathlib
           import sys
+          import urllib.request
 
           tag = sys.argv[1]
           catalog = json.load(open("repository.json", encoding="utf-8"))
@@ -96,14 +97,25 @@ jobs:
               if plugin_id not in prefix:
                   problems.append(f"{plugin_id}: unknown plugin in the catalog")
                   continue
+              # An unchanged binary keeps the URL of the release that first
+              # shipped it, so the tag in the URL is not necessarily this one.
+              # What must hold is that the URL still downloads something.
               for platform in ("linux/amd64", "linux/arm64", "darwin/arm64"):
                   info = binaries.get(platform)
                   if not info:
                       problems.append(f"{plugin_id}: catalog has no {platform} binary")
                       continue
                   url = info.get("url", "")
-                  if f"/{tag}/" not in url:
-                      problems.append(f"{plugin_id} {platform}: catalog points at {url}")
+                  if "/releases/download/" not in url:
+                      problems.append(f"{plugin_id} {platform}: not a release URL: {url}")
+                      continue
+                  request = urllib.request.Request(url, method="HEAD")
+                  try:
+                      with urllib.request.urlopen(request, timeout=30) as response:
+                          if response.status != 200:
+                              problems.append(f"{plugin_id} {platform}: HTTP {response.status} for {url}")
+                  except Exception as error:  # noqa: BLE001 - any failure is a broken pointer
+                      problems.append(f"{plugin_id} {platform}: {error} for {url}")
               local = pathlib.Path("downloaded") / f"{prefix[plugin_id]}-linux-amd64"
               expected = (binaries.get("linux/amd64") or {}).get("checksum")
               if local.exists() and expected:
@@ -116,7 +128,7 @@ jobs:
               for problem in problems:
                   print(problem)
               raise SystemExit(1)
-          print("catalog, tag and binary checksums agree")
+          print(f"catalog points at live URLs and the {tag} binaries match their checksums")
           PY
 
       - name: Embedded manifests match the tagged source
