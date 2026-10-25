@@ -90,19 +90,20 @@ func TestManifestAdvertisesTheBuiltInCapabilities(t *testing.T) {
 	}
 }
 
-// The app credentials are install-wide: the client ID is public and the
-// secret is kept on the host's protected path.
+// The app credentials are install-wide and optional: the client ID is public,
+// the secret is kept on the host's protected path, and device-code login works
+// without either because the provider falls back to its built-in client.
 func TestManifestDeclaresTheTraktAppConfig(t *testing.T) {
 	t.Parallel()
 	schemas := loadManifest(t).GetGlobalConfigSchema()
-	if len(schemas) != 1 || schemas[0].GetKey() != "app" || !schemas[0].GetRequired() {
+	if len(schemas) != 1 || schemas[0].GetKey() != "app" || schemas[0].GetRequired() {
 		t.Fatalf("global config = %v", schemas)
 	}
 	fields := map[string]*pluginv1.AdminFormField{}
 	for _, field := range schemas[0].GetAdminForm().GetFields() {
 		fields[field.GetKey()] = field
 	}
-	if id := fields["client_id"]; id == nil || id.GetSecret() || id.GetControl() == pluginv1.AdminFormControl_ADMIN_FORM_CONTROL_PASSWORD || !id.GetRequired() {
+	if id := fields["client_id"]; id == nil || id.GetSecret() || id.GetControl() == pluginv1.AdminFormControl_ADMIN_FORM_CONTROL_PASSWORD || id.GetRequired() {
 		t.Fatalf("client_id field = %v", id)
 	}
 	if secret := fields["client_secret"]; secret == nil || !secret.GetSecret() || secret.GetRequired() {
