@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	github.com/Silo-Server/silo-plugin-sdk v0.24.0
+	golang.org/x/text v0.41.0
 	google.golang.org/protobuf v1.36.12
 	modernc.org/sqlite v1.34.0
 )
@@ -24,7 +25,6 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/grpc v1.83.2 // indirect
 	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6 // indirect

@@ -4,10 +4,14 @@
 package comicinfo
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"strings"
+
+	"golang.org/x/text/encoding/htmlindex"
+	"golang.org/x/text/transform"
 )
 
 // ComicInfo is the root element of a ComicInfo.xml document.
@@ -89,19 +93,43 @@ func Parse(r io.Reader) (*ComicInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("comicinfo: read: %w", err)
 	}
-	if len(strings.TrimSpace(string(data))) == 0 {
+	return ParseBytes(data)
+}
+
+// ParseBytes parses a ComicInfo.xml document.
+//
+// Files in the wild are not strict XML. They carry HTML entities such as
+// &nbsp;, unescaped ampersands, a byte order mark, and a Windows-1252 or
+// ISO-8859-1 declaration inherited from ComicRack. The decoder is configured to
+// survive all of that, because rejecting the document over one character loses
+// every field it carried.
+func ParseBytes(data []byte) (*ComicInfo, error) {
+	data = bytes.TrimPrefix(data, []byte{0xEF, 0xBB, 0xBF})
+	if len(bytes.TrimSpace(data)) == 0 {
 		return nil, fmt.Errorf("comicinfo: empty document")
 	}
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.Strict = false
+	decoder.Entity = xml.HTMLEntity
+	decoder.CharsetReader = charsetReader
 	var ci ComicInfo
-	if err := xml.Unmarshal(data, &ci); err != nil {
+	if err := decoder.Decode(&ci); err != nil {
 		return nil, fmt.Errorf("comicinfo: unmarshal: %w", err)
 	}
 	return &ci, nil
 }
 
-// ParseBytes is a convenience wrapper around Parse.
-func ParseBytes(data []byte) (*ComicInfo, error) {
-	return Parse(strings.NewReader(string(data)))
+// charsetReader transcodes a declared legacy charset into UTF-8, so a document
+// that says ISO-8859-1 parses instead of failing on the declaration.
+func charsetReader(charset string, input io.Reader) (io.Reader, error) {
+	encoding, err := htmlindex.Get(charset)
+	if err != nil {
+		return nil, fmt.Errorf("comicinfo: unknown charset %q: %w", charset, err)
+	}
+	if encoding == nil {
+		return input, nil
+	}
+	return transform.NewReader(input, encoding.NewDecoder()), nil
 }
 
 // Creators returns a de-duplicated, trimmed list of all creator names found

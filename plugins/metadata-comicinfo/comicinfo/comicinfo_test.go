@@ -86,3 +86,75 @@ func TestParseNilReader(t *testing.T) {
 		t.Fatal("expected error for nil reader")
 	}
 }
+
+// Real ComicRack files are not strict XML. Each of these would have failed the
+// whole document before the decoder was relaxed, taking every field with it.
+func TestParseAcceptsRealWorldDocuments(t *testing.T) {
+	cases := []struct {
+		name  string
+		input string
+		title string
+	}{
+		{
+			name: "html entity",
+			// &nbsp; resolves to U+00A0, a non-breaking space, not U+0020.
+			input: `<ComicInfo><Title>Batman&nbsp;Annual</Title></ComicInfo>`,
+			title: "Batman\u00a0Annual",
+		},
+		{
+			name:  "accented html entity",
+			input: `<ComicInfo><Title>Pok&eacute;mon Adventures</Title></ComicInfo>`,
+			title: "Pokémon Adventures",
+		},
+		{
+			name:  "unescaped ampersand",
+			input: `<ComicInfo><Title>Batman & Robin</Title></ComicInfo>`,
+			title: "Batman & Robin",
+		},
+		{
+			name:  "byte order mark",
+			input: "\xef\xbb\xbf" + `<ComicInfo><Title>Batman</Title></ComicInfo>`,
+			title: "Batman",
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ci, err := ParseBytes([]byte(c.input))
+			if err != nil {
+				t.Fatalf("ParseBytes: %v", err)
+			}
+			if ci.Title != c.title {
+				t.Fatalf("title = %q, want %q", ci.Title, c.title)
+			}
+		})
+	}
+}
+
+// A Windows-1252 or ISO-8859-1 declaration is normal in ComicRack output and
+// must not fail the parse.
+func TestParseTranscodesLegacyCharsets(t *testing.T) {
+	latin := []byte(`<?xml version="1.0" encoding="ISO-8859-1"?><ComicInfo><Title>Pok` + "\xe9" + `mon</Title></ComicInfo>`)
+	ci, err := ParseBytes(latin)
+	if err != nil {
+		t.Fatalf("ISO-8859-1: %v", err)
+	}
+	if ci.Title != "Pokémon" {
+		t.Fatalf("title = %q, want Pokémon", ci.Title)
+	}
+
+	win := []byte(`<?xml version="1.0" encoding="windows-1252"?><ComicInfo><Title>Caf` + "\xe9" + `</Title></ComicInfo>`)
+	ci, err = ParseBytes(win)
+	if err != nil {
+		t.Fatalf("windows-1252: %v", err)
+	}
+	if ci.Title != "Café" {
+		t.Fatalf("title = %q, want Café", ci.Title)
+	}
+}
+
+// The wrong root element is a different document, not an empty one.
+func TestParseRejectsAWrongRoot(t *testing.T) {
+	if _, err := ParseBytes([]byte(`<Foo><Title>Batman</Title></Foo>`)); err == nil {
+		t.Fatal("expected error for a non ComicInfo root")
+	}
+}
