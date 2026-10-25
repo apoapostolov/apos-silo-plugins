@@ -106,15 +106,15 @@ func (s *server) Search(ctx context.Context, req *pluginv1.SearchMetadataRequest
 		if err != nil {
 			return &pluginv1.SearchMetadataResponse{}, nil
 		}
-		return &pluginv1.SearchMetadataResponse{Results: []*pluginv1.ProviderSearchResult{searchResult(show)}}, nil
+		return &pluginv1.SearchMetadataResponse{Results: []*pluginv1.ProviderSearchResult{searchResult(apple.ScoredShow{Show: show, Score: 1})}}, nil
 	}
-	shows, err := s.client().Search(ctx, query, maxResults)
+	scored, err := s.client().SearchScored(ctx, query, maxResults)
 	if err != nil {
 		return nil, err
 	}
-	results := make([]*pluginv1.ProviderSearchResult, 0, len(shows))
-	for _, show := range shows {
-		results = append(results, searchResult(show))
+	results := make([]*pluginv1.ProviderSearchResult, 0, len(scored))
+	for _, candidate := range scored {
+		results = append(results, searchResult(candidate))
 	}
 	return &pluginv1.SearchMetadataResponse{Results: results}, nil
 }
@@ -229,14 +229,15 @@ func PosterPath(appleID string) string {
 	return posterScheme + appleID + posterSuffix
 }
 
-func searchResult(show apple.Show) *pluginv1.ProviderSearchResult {
+func searchResult(candidate apple.ScoredShow) *pluginv1.ProviderSearchResult {
+	show := candidate.Show
 	providerIDs, _ := structpb.NewStruct(map[string]any{capabilityID: show.AppleID})
 	result := &pluginv1.ProviderSearchResult{
 		ProviderId:       show.AppleID,
 		ItemType:         itemType,
 		Title:            show.Title,
 		OriginalTitle:    show.Title,
-		Overview:         "",
+		Overview:         confidenceLine(candidate),
 		ProviderIds:      providerIDs,
 		ImageUrl:         apple.ArtworkAt(show.ArtworkURL, posterWidth),
 		OriginalLanguage: show.Language,
@@ -244,6 +245,22 @@ func searchResult(show apple.Show) *pluginv1.ProviderSearchResult {
 	// No year: a podcast collection's Apple releaseDate is the latest episode
 	// date, not the show's first year, and a wrong year is worse than none.
 	return result
+}
+
+// confidenceLine describes why a candidate is offered, because the match dialog
+// has no score column of its own.
+func confidenceLine(candidate apple.ScoredShow) string {
+	parts := []string{fmt.Sprintf("Apple match %d%%", int(candidate.Score*100+0.5))}
+	if candidate.Artist != "" {
+		parts = append(parts, candidate.Artist)
+	}
+	if candidate.EpisodeCount > 0 {
+		parts = append(parts, fmt.Sprintf("%d episodes", candidate.EpisodeCount))
+	}
+	if candidate.Genre != "" {
+		parts = append(parts, candidate.Genre)
+	}
+	return strings.Join(parts, " · ")
 }
 
 func metadataItem(show apple.Show, channel apple.Channel) (*pluginv1.MetadataItem, error) {

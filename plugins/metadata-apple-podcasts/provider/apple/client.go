@@ -169,6 +169,11 @@ func (d directoryShow) show() Show {
 
 // Search returns directory matches for a show name.
 func (c *Client) Search(ctx context.Context, query string, limit int) ([]Show, error) {
+	return c.searchIn(ctx, query, c.country, limit)
+}
+
+// searchIn runs one directory query against a specific storefront.
+func (c *Client) searchIn(ctx context.Context, query, country string, limit int) ([]Show, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, errors.New("apple: empty search query")
@@ -176,8 +181,11 @@ func (c *Client) Search(ctx context.Context, query string, limit int) ([]Show, e
 	if limit <= 0 || limit > 50 {
 		limit = 10
 	}
+	if country == "" {
+		country = c.country
+	}
 	url := fmt.Sprintf("%s?term=%s&media=podcast&entity=podcast&limit=%d&country=%s",
-		c.searchURL, urlEncode(query), limit, urlEncode(c.country))
+		c.searchURL, urlEncode(query), limit, urlEncode(country))
 	var payload searchResponse
 	if err := c.getJSON(ctx, url, &payload); err != nil {
 		return nil, err
@@ -191,6 +199,55 @@ func (c *Client) Search(ctx context.Context, query string, limit int) ([]Show, e
 		shows = append(shows, entry.show())
 	}
 	return shows, nil
+}
+
+// SearchScored gathers candidates from several query shapes, widens to other
+// storefronts when the first attempt finds nothing, and ranks everything against
+// the original title. This is what makes a long on-disk title usable.
+func (c *Client) SearchScored(ctx context.Context, query string, limit int) ([]ScoredShow, error) {
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil, errors.New("apple: empty search query")
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	variants := QueryVariants(query)
+	gathered := make([]Show, 0, 64)
+	seen := map[string]struct{}{}
+	collect := func(shows []Show) {
+		for _, show := range shows {
+			if _, ok := seen[show.AppleID]; ok {
+				continue
+			}
+			seen[show.AppleID] = struct{}{}
+			gathered = append(gathered, show)
+		}
+	}
+
+	for _, variant := range variants {
+		shows, err := c.searchIn(ctx, variant, c.country, 50)
+		if err != nil {
+			// A rate-limited or empty variant must not lose the others.
+			continue
+		}
+		collect(shows)
+	}
+
+	// Nothing at all: the show may be carried only in another storefront.
+	if len(gathered) == 0 {
+		for _, country := range []string{"us", "gb", "ca", "au"} {
+			if country == c.country {
+				continue
+			}
+			if shows, err := c.searchIn(ctx, variants[0], country, 50); err == nil && len(shows) > 0 {
+				collect(shows)
+				break
+			}
+		}
+	}
+
+	return rankCandidates(query, gathered, MatchFloor, limit), nil
 }
 
 // Lookup returns one show by Apple collection id.

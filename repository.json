@@ -339,7 +339,7 @@
     {
       "manifest": {
         "plugin_id": "silo.apple-podcasts-metadata",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "silo_api_version": "v1",
         "presentation": {
           "display_name": "Apple Podcasts Metadata",
@@ -418,16 +418,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-apple-podcasts",
       "binaries": {
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.1.0/apple-podcasts-darwin-arm64",
-          "checksum": "7d57199ad8c2bd87b83549e1e61ebbfebc3cf70031690ac4cd4cc1e2b0378928"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.2.0/apple-podcasts-darwin-arm64",
+          "checksum": "11fe169e157bd4f3dd7b9c4a584e6735d7d10692612651dc611405c751e3ea76"
         },
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.1.0/apple-podcasts-linux-amd64",
-          "checksum": "2558fc7ac021fca6e1ebc51d68fe3113cef07dea9a7d313f092ceb9ce39256ee"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.2.0/apple-podcasts-linux-amd64",
+          "checksum": "5faa94b89c15468a533b808ff4efc63e0c5137cd84d8e0d2e0dc01429b6c122e"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.1.0/apple-podcasts-linux-arm64",
-          "checksum": "30d91f15609ba8fdc00e97546f8d4c7053e4a28939963d065360437f59487b9e"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v0.2.0/apple-podcasts-linux-arm64",
+          "checksum": "99529d710a7b31b2e99d7cf969106f6b20cab6e38dda4b4d97654a0aaf717dc4"
         }
       }
     }

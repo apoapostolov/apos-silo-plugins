@@ -34,6 +34,30 @@ resolver capability owns that scheme and rewrites Apple's size segment
 degrades to 800 instead of failing. That is one image file served at any size by
 Apple's own CDN, so no re-hosting is involved.
 
+## Matching
+
+Apple's search is ranked by popularity, so an exact query for a long on-disk
+title often returns nothing at all while a shorter clause returns the show. The
+provider therefore:
+
+- searches several query shapes (the whole title, the clause before a dash,
+  colon or pipe, the first three identifying words, the longest word) and merges
+  the results, widening to the `us`, `gb`, `ca` and `au` storefronts when the
+  first pass finds nothing;
+- drops format words before comparing (actual play, D&D, 5E, dark fantasy,
+  podcast, official, …), because those appear on half the shows in the category;
+- scores every candidate against the original title with word containment plus
+  character-bigram overlap, tolerating plurals like `Turncloak`/`Turncloaks`;
+- keeps only candidates above 0.42 confidence, best first.
+
+The match dialog gets the confidence as the first line of each candidate's
+description (`Apple match 94% · Rusty Quill · 401 episodes · Performing Arts`),
+since the host has no score column.
+
+A show that Apple has de-listed cannot be matched by any query. When that
+happens the honest answer is "not in the directory", not "the plugin is broken";
+the feed path is the way to fill in such a show.
+
 ## Install
 
 Add this repository URL under **Admin → Plugins → Repositories** in Silo:
