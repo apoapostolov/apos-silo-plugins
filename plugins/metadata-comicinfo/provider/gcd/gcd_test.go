@@ -82,3 +82,53 @@ func TestMissingPath(t *testing.T) {
 		t.Fatal("expected error for empty path")
 	}
 }
+
+// A series title containing a wildcard character must match itself and nothing
+// else. Without ESCAPE in the query the backslashes escapeLike adds are literal,
+// so a search for "100%" finds nothing at all and a search for "A_B" matches any
+// single character in that position.
+func TestSearchTreatsWildcardsLiterally(t *testing.T) {
+	path := buildFixture(t)
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := []string{
+		`INSERT INTO gcd_series (id,name,year_began,issue_count,publisher_id) VALUES (2,'100% Comics',1990,1,1)`,
+		`INSERT INTO gcd_series (id,name,year_began,issue_count,publisher_id) VALUES (3,'100X Comics',1991,1,1)`,
+		`INSERT INTO gcd_series (id,name,year_began,issue_count,publisher_id) VALUES (4,'A_B Comics',1992,1,1)`,
+		`INSERT INTO gcd_series (id,name,year_began,issue_count,publisher_id) VALUES (5,'AXB Comics',1993,1,1)`,
+	}
+	for _, row := range rows {
+		if _, err := db.Exec(row); err != nil {
+			t.Fatalf("insert: %v", err)
+		}
+	}
+	db.Close()
+
+	p, err := New(Options{DBPath: path})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer p.Close()
+
+	seriesNames := func(query string) []string {
+		t.Helper()
+		matches, err := p.Search(metadata.SearchQuery{Series: query})
+		if err != nil {
+			t.Fatalf("search %q: %v", query, err)
+		}
+		names := make([]string, 0, len(matches))
+		for _, match := range matches {
+			names = append(names, match.Series)
+		}
+		return names
+	}
+
+	if got := seriesNames("100%"); len(got) != 1 || got[0] != "100% Comics" {
+		t.Errorf("search for 100%% = %v, want [100%% Comics]", got)
+	}
+	if got := seriesNames("A_B"); len(got) != 1 || got[0] != "A_B Comics" {
+		t.Errorf("search for A_B = %v, want [A_B Comics]", got)
+	}
+}

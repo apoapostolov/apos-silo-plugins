@@ -120,7 +120,7 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 		SELECT s.id, s.name, s.year_began, s.issue_count, COALESCE(p.name,'')
 		FROM gcd_series s
 		LEFT JOIN gcd_publisher p ON p.id = s.publisher_id
-		WHERE s.name LIKE ? COLLATE NOCASE
+		WHERE s.name LIKE ? ESCAPE '\' COLLATE NOCASE
 		LIMIT 10`, "%"+escapeLike(title)+"%")
 	if err != nil {
 		return nil, fmt.Errorf("gcd: series query: %w", err)
