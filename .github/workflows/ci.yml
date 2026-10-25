@@ -10,17 +10,29 @@ permissions:
   contents: read
 
 env:
-  GOWORK: off
+  GOWORK: "off"
 
 jobs:
-  test:
+  check:
+    name: ${{ matrix.plugin }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin:
+          - metadata-comicinfo
+          - watchprovider-trakt
+          - metadata-apple-podcasts
+    defaults:
+      run:
+        working-directory: plugins/${{ matrix.plugin }}
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
+          go-version-file: plugins/${{ matrix.plugin }}/go.mod
+          cache-dependency-path: plugins/${{ matrix.plugin }}/go.sum
 
       - name: Configure module resolution
         run: |
@@ -29,9 +41,11 @@ jobs:
           go env -w GONOSUMDB=github.com/Silo-Server/*
 
       - name: Reject committed local SDK replaces
+        working-directory: .
         run: |
-          if grep -Eq '^replace github.com/Silo-Server/silo-plugin-sdk => /' go.mod; then
-            echo "go.mod contains a machine-local silo-plugin-sdk replace."
+          if grep -Eq '^replace github.com/Silo-Server/silo-plugin-sdk => /' plugins/*/go.mod; then
+            echo "A go.mod contains a machine-local silo-plugin-sdk replace:"
+            grep -En '^replace github.com/Silo-Server/silo-plugin-sdk => /' plugins/*/go.mod
             exit 1
           fi
 
@@ -50,20 +64,29 @@ jobs:
       - name: Test
         run: go test -race ./...
 
+      - name: Build
+        run: go build ./...
+
       - name: Validate manifest
         run: go run . manifest >/dev/null
 
-      - name: Build every release platform
-        run: make build-all
-
   lint:
+    name: lint ${{ matrix.plugin }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin:
+          - metadata-comicinfo
+          - watchprovider-trakt
+          - metadata-apple-podcasts
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
+          go-version-file: plugins/${{ matrix.plugin }}/go.mod
+          cache-dependency-path: plugins/${{ matrix.plugin }}/go.sum
 
       - name: Configure module resolution
         run: |
@@ -74,3 +97,4 @@ jobs:
       - uses: golangci/golangci-lint-action@v8
         with:
           version: v2.12
+          working-directory: plugins/${{ matrix.plugin }}

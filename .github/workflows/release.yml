@@ -1,168 +1,112 @@
 name: Release
 
+# A tag is cut only after the assets are uploaded, so this workflow verifies the
+# published release instead of rebuilding it. It answers one question: does the
+# tag carry the nine binaries a Silo server installs, do their embedded
+# manifests match the source they were tagged from, and does repository.json
+# point at this tag? A release failing this check is one the catalog should not
+# advertise.
+
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to verify, for example v1.0.14'
+        required: true
+        type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  version:
+  verify:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Determine version
-        id: version
+      - name: Resolve the tag under test
+        id: ref
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            tag="${GITHUB_REF_NAME}"
-            version="${tag#v}"
-          else
-            # Auto-increment patch from latest tag.
-            latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
-            if [ -z "$latest" ]; then
-              version="0.1.0"
-            else
-              base="${latest#v}"
-              IFS='.' read -r major minor patch <<< "$base"
-              patch=$((patch + 1))
-              version="${major}.${minor}.${patch}"
-            fi
-            tag="v${version}"
-
-            # Update manifest.json so the catalog tool sees the correct version.
-            jq --arg v "$version" '.version = $v' manifest.json > manifest.tmp && mv manifest.tmp manifest.json
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add manifest.json
-            git commit -m "chore: bump version to ${version}"
-            git tag "$tag"
-            # Push only the tag. main is protected (PRs only), so pushing the
-            # bump commit there fails the whole run. The version is always
-            # derived from the latest tag, and the tag's commit carries the
-            # bumped manifest, so the released manifest-*.json stays correct
-            # even though main's manifest.json is never rewritten.
-            git push origin "refs/tags/${tag}"
-          fi
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-
-  build:
-    needs: version
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            goos: linux
-            goarch: amd64
-          - os: ubuntu-latest
-            goos: linux
-            goarch: arm64
-          - os: macos-latest
-            goos: darwin
-            goarch: arm64
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.version.outputs.tag }}
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version: '1.26'
-
-      - name: Configure module resolution
-        run: |
-          go env -w GOPROXY=direct
-          go env -w GOPRIVATE=github.com/Silo-Server/*
-          go env -w GONOSUMDB=github.com/Silo-Server/*
-
-      - name: Reject committed local SDK replaces
-        run: |
-          if grep -Eq '^replace github.com/Silo-Server/silo-plugin-sdk => /' go.mod; then
-            echo "go.mod contains a machine-local silo-plugin-sdk replace."
+          tag="${INPUT_TAG:-$REF_NAME}"
+          # The tag reaches a shell, so only the shape this repository cuts is
+          # accepted, never an arbitrary ref.
+          if ! printf '%s' "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "refusing tag outside v<major>.<minor>.<patch>: $tag"
             exit 1
           fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-      - name: Build plugin binary
+      - name: Every asset the catalog advertises is present
         env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: '0'
-          GOWORK: off
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.ref.outputs.tag }}
         run: |
-          mkdir -p dist
-          binary="plugin-${GOOS}-${GOARCH}"
-          version="${{ needs.version.outputs.version }}"
-          go build -trimpath -ldflags="-s -w -X main.version=${version}" -o "dist/${binary}" .
-          checksum=$(shasum -a 256 "dist/${binary}" | awk '{print $1}')
-          printf '%s  %s\n' "$checksum" "$binary" > dist/checksums.txt
-          sed "s/__CHECKSUM__/${checksum}/" manifest.json > "dist/manifest-${GOOS}-${GOARCH}.json"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: plugin-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: |
-            dist/plugin-${{ matrix.goos }}-${{ matrix.goarch }}
-            dist/checksums.txt
-            dist/manifest-${{ matrix.goos }}-${{ matrix.goarch }}.json
-
-  release:
-    needs: [version, build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Prepare release assets
-        run: |
-          mkdir -p release
-          : > release/checksums.txt
-          for dir in artifacts/plugin-*; do
-            platform=$(basename "$dir" | sed 's/plugin-//')
-            cp "${dir}/plugin-${platform}" "release/plugin-${platform}"
-            cat "${dir}/checksums.txt" >> release/checksums.txt
-          done
-          sort -u -o release/checksums.txt release/checksums.txt
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.version.outputs.tag }}
-          files: |
-            release/plugin-linux-amd64
-            release/plugin-linux-arm64
-            release/plugin-darwin-arm64
-            release/checksums.txt
-          generate_release_notes: true
-
-      - name: Notify silo-plugins catalog
-        env:
-          DISPATCH_TOKEN: ${{ secrets.SILO_PLUGINS_DISPATCH_TOKEN }}
-          PLUGIN_REPO: ${{ github.repository }}
-        run: |
-          if [ -z "$DISPATCH_TOKEN" ]; then
-            echo "SILO_PLUGINS_DISPATCH_TOKEN is not set; skipping catalog dispatch."
-            exit 0
+          set -euo pipefail
+          expected="$(printf '%s\n' \
+            apple-podcasts-darwin-arm64 apple-podcasts-linux-amd64 apple-podcasts-linux-arm64 \
+            comicinfo-darwin-arm64 comicinfo-linux-amd64 comicinfo-linux-arm64 \
+            trakt-darwin-arm64 trakt-linux-amd64 trakt-linux-arm64 | sort)"
+          actual="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | sort)"
+          if [ "$expected" != "$actual" ]; then
+            echo "Asset list does not match what a Silo server installs."
+            diff <(echo "$expected") <(echo "$actual") || true
+            exit 1
           fi
-          curl --fail --silent --show-error \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${DISPATCH_TOKEN}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/Silo-Server/silo-plugins/dispatches \
-            -d "$(printf '{"event_type":"plugin_release_published","client_payload":{"repo":"%s","tag":"%s"}}' "${PLUGIN_REPO}" "${{ needs.version.outputs.tag }}")"
+          echo "All nine assets present."
+
+      - name: The catalog points at this tag
+        env:
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 - "$TAG" <<'PY'
+          import json
+          import sys
+
+          tag = sys.argv[1]
+          catalog = json.load(open("repository.json", encoding="utf-8"))
+          bad = []
+          for entry in catalog.get("plugins", []):
+              plugin_id = entry.get("manifest", {}).get("plugin_id", "?")
+              urls = [v.get("url", "") for v in entry.get("versions", [])]
+              if not urls:
+                  urls = [a.get("url", "") for a in entry.get("assets", [])]
+              if not any("/" + tag + "/" in url for url in urls):
+                  bad.append((plugin_id, urls))
+          if bad:
+              for plugin_id, urls in bad:
+                  print(plugin_id, urls)
+              raise SystemExit("catalog does not point at " + tag)
+          print("catalog points at " + tag)
+          PY
+
+      - name: Embedded manifests match the tagged source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p downloaded
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir downloaded --pattern '*-linux-amd64'
+          chmod +x downloaded/*
+          status=0
+          check() {
+            binary="$1"
+            manifest="$2"
+            built="$(./downloaded/$binary manifest | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])')"
+            source="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' "$manifest")"
+            echo "$binary reports $built, $manifest says $source"
+            if [ "$built" != "$source" ]; then
+              status=1
+            fi
+          }
+          check comicinfo-linux-amd64 plugins/metadata-comicinfo/manifest.json || status=1
+          check trakt-linux-amd64 plugins/watchprovider-trakt/manifest.json || status=1
+          check apple-podcasts-linux-amd64 plugins/metadata-apple-podcasts/manifest.json || status=1
+          exit "$status"
