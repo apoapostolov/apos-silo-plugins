@@ -120,7 +120,7 @@
     {
       "manifest": {
         "plugin_id": "silo.comicinfo-metadata",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "silo_api_version": "v1",
         "presentation": {
           "display_name": "ComicInfo Metadata",
@@ -157,7 +157,8 @@
             "description": "Finds mainstream comic series and issues in a local Grand Comics Database dump, ComicVine, or Metron, and enriches them with metadata, creators, and publication details.",
             "metadata": {
               "default_priority": {
-                "comic": 1
+                "comic": 1,
+                "ebook": 1
               }
             }
           }
@@ -279,16 +280,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.5/comicinfo-linux-amd64",
-          "checksum": "f21f14d84ce09b2a00450596eadb1c897fcbbf3e3d3037ececc70d24696756ac"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.6/comicinfo-linux-amd64",
+          "checksum": "92dbfb8299d00a7d2b886f567d08750e7195e32f6dab305ea728035b300b3019"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.5/comicinfo-linux-arm64",
-          "checksum": "0d0afe9babef96af8cea7c84acba6c53416a6b2621775fc6f6677a56463e195b"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.6/comicinfo-linux-arm64",
+          "checksum": "ff2013f407b04805b12bea971897049878094e78cce45db66f215430bcade89e"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.5/comicinfo-darwin-arm64",
-          "checksum": "cc819cb5a0d023641a87d2e03ef4d8e87e5c39ff54c9d59d180b0e12c0ca7b3b"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.6/comicinfo-darwin-arm64",
+          "checksum": "39057427aab80715d8d985b46bdf070a1cb414ffc88ce6b1ed573eb0afe7a251"
         }
       }
     },
