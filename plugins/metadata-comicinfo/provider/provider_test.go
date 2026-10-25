@@ -8,7 +8,7 @@ import (
 
 func TestManagerFilenameFallback(t *testing.T) {
 	m := NewManager(Options{EnableFilename: true})
-	defer m.Close()
+	defer func() { _ = m.Close() }()
 	if got := m.Names(); len(got) != 1 || got[0] != "filename" {
 		t.Fatalf("names = %v", got)
 	}
@@ -27,7 +27,7 @@ func TestManagerFilenameFallback(t *testing.T) {
 func TestManagerPriority(t *testing.T) {
 	// With GCD and ComicVine disabled, only filename is registered.
 	m := NewManager(Options{EnableGCD: true, GCDDBPath: "", EnableComicVine: true, ComicVineAPIKey: "", EnableMetron: true, MetronToken: "", EnableFilename: true})
-	defer m.Close()
+	defer func() { _ = m.Close() }()
 	if got := m.Names(); len(got) != 1 || got[0] != "filename" {
 		t.Fatalf("names = %v", got)
 	}

@@ -16,7 +16,7 @@ func buildFixture(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	stmts := []string{
 		`CREATE TABLE gcd_publisher (id INTEGER PRIMARY KEY, name TEXT)`,
 		`CREATE TABLE gcd_series (id INTEGER PRIMARY KEY, name TEXT, sort_name TEXT, year_began INTEGER, year_ended INTEGER, issue_count INTEGER, publisher_id INTEGER, first_issue_id INTEGER, notes TEXT)`,
@@ -48,7 +48,7 @@ func TestSearchAndFetch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer p.Close()
+	defer func() { _ = p.Close() }()
 
 	matches, err := p.Search(metadata.SearchQuery{Series: "Test Series", Number: "1", Year: 2020})
 	if err != nil {
@@ -104,13 +104,13 @@ func TestSearchTreatsWildcardsLiterally(t *testing.T) {
 			t.Fatalf("insert: %v", err)
 		}
 	}
-	db.Close()
+	_ = db.Close()
 
 	p, err := New(Options{DBPath: path})
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer p.Close()
+	defer func() { _ = p.Close() }()
 
 	seriesNames := func(query string) []string {
 		t.Helper()

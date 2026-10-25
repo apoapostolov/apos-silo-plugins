@@ -16,9 +16,9 @@ func TestSearchAndFetch(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/issue/":
-			w.Write([]byte(`{"count":1,"results":[{"id":7,"number":"2","title":"Issue Two","desc":"<b>Desc</b>","cover_date":"2021-03-04","image":"http://cover","series":{"id":1,"name":"Metron Series"},"publisher":{"name":"Pub"},"credits":[{"creator":{"name":"Bob"},"role":{"name":"writer"}}],"characters":[{"name":"Hero"}],"teams":[{"name":"Crew"}]}]}`))
+			_, _ = w.Write([]byte(`{"count":1,"results":[{"id":7,"number":"2","title":"Issue Two","desc":"<b>Desc</b>","cover_date":"2021-03-04","image":"http://cover","series":{"id":1,"name":"Metron Series"},"publisher":{"name":"Pub"},"credits":[{"creator":{"name":"Bob"},"role":{"name":"writer"}}],"characters":[{"name":"Hero"}],"teams":[{"name":"Crew"}]}]}`))
 		case "/issue/7/":
-			w.Write([]byte(`{"id":7,"number":"2","title":"Issue Two","desc":"Desc","cover_date":"2021-03-04","image":"http://cover","series":{"name":"Metron Series"},"publisher":{"name":"Pub"}}`))
+			_, _ = w.Write([]byte(`{"id":7,"number":"2","title":"Issue Two","desc":"Desc","cover_date":"2021-03-04","image":"http://cover","series":{"name":"Metron Series"},"publisher":{"name":"Pub"}}`))
 		default:
 			http.NotFound(w, r)
 		}

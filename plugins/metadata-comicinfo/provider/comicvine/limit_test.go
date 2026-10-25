@@ -42,7 +42,7 @@ func TestSearchDeclinesANameWithoutAnIssue(t *testing.T) {
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&calls, 1)
-		io.WriteString(w, `{"error":"OK","results":[]}`)
+		_, _ = io.WriteString(w, `{"error":"OK","results":[]}`)
 	}))
 	defer server.Close()
 
@@ -66,7 +66,7 @@ func TestSearchCachesAnIssueAndSpendsOneRequest(t *testing.T) {
 		if got := r.URL.Query().Get("filter"); got != "issue_number:48" {
 			t.Errorf("filter = %q, want the issue number", got)
 		}
-		io.WriteString(w, `{"error":"OK","results":[{"id":42,"name":"Fables","issue_number":"48","volume":{"id":7,"name":"Fables"},"cover_date":"2006-06-01"}]}`)
+		_, _ = io.WriteString(w, `{"error":"OK","results":[{"id":42,"name":"Fables","issue_number":"48","volume":{"id":7,"name":"Fables"},"cover_date":"2006-06-01"}]}`)
 	}))
 	defer server.Close()
 
@@ -90,7 +90,7 @@ func TestSearchCachesAnIssueAndSpendsOneRequest(t *testing.T) {
 
 func TestSearchRefusesOnceTheBudgetIsSpent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, `{"error":"OK","results":[]}`)
+		_, _ = io.WriteString(w, `{"error":"OK","results":[]}`)
 	}))
 	defer server.Close()
 
@@ -116,7 +116,7 @@ func TestA420StopsTheProviderSpendingMore(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&calls, 1)
 		w.WriteHeader(420)
-		io.WriteString(w, "{\"error\":\"Rate limit exceeded.  Slow down cowboy.\",\"status_code\":107}")
+		_, _ = io.WriteString(w, "{\"error\":\"Rate limit exceeded.  Slow down cowboy.\",\"status_code\":107}")
 	}))
 	defer server.Close()
 
@@ -140,7 +140,7 @@ func TestA420StopsTheProviderSpendingMore(t *testing.T) {
 
 func TestFetchSpendsBudgetAndAnswersTheIssue(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, `{"error":"OK","results":{"id":42,"name":"Fables","issue_number":"48","volume":{"id":7,"name":"Fables"},"publisher":{"id":10,"name":"DC Comics"},"cover_date":"2006-06-01"}}`)
+		_, _ = io.WriteString(w, `{"error":"OK","results":{"id":42,"name":"Fables","issue_number":"48","volume":{"id":7,"name":"Fables"},"publisher":{"id":10,"name":"DC Comics"},"cover_date":"2006-06-01"}}`)
 	}))
 	defer server.Close()
 

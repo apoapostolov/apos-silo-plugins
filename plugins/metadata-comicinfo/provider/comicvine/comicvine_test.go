@@ -16,9 +16,9 @@ func TestSearchAndFetch(t *testing.T) {
 			if r.URL.Query().Get("api_key") != "key" {
 				t.Errorf("missing api key")
 			}
-			w.Write([]byte(`{"error":"OK","number_of_page_results":1,"results":[{"id":123,"name":"Issue One","issue_number":"1","description":"<p>Hello</p>","image":{"original_url":"http://img"},"volume":{"id":9,"name":"Test Series"},"cover_date":"2020-05-01","person_credits":[{"name":"Ann Author","role":"writer"}],"character_credits":[{"name":"Hero"}],"team_credits":[{"name":"Team"}],"publisher":{"name":"ACME"}}]}`))
+			_, _ = w.Write([]byte(`{"error":"OK","number_of_page_results":1,"results":[{"id":123,"name":"Issue One","issue_number":"1","description":"<p>Hello</p>","image":{"original_url":"http://img"},"volume":{"id":9,"name":"Test Series"},"cover_date":"2020-05-01","person_credits":[{"name":"Ann Author","role":"writer"}],"character_credits":[{"name":"Hero"}],"team_credits":[{"name":"Team"}],"publisher":{"name":"ACME"}}]}`))
 		case "/issue/4000-123/":
-			w.Write([]byte(`{"error":"OK","results":{"id":123,"name":"Issue One","issue_number":"1","description":"Hello","volume":{"name":"Test Series"},"cover_date":"2020-05-01","publisher":{"name":"ACME"}}}`))
+			_, _ = w.Write([]byte(`{"error":"OK","results":{"id":123,"name":"Issue One","issue_number":"1","description":"Hello","volume":{"name":"Test Series"},"cover_date":"2020-05-01","publisher":{"name":"ACME"}}}`))
 		default:
 			http.NotFound(w, r)
 		}

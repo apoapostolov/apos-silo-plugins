@@ -57,7 +57,7 @@ func TestExhaustedRemainingHeaderClosesTheGate(t *testing.T) {
 		atomic.AddInt32(&calls, 1)
 		w.Header().Set("X-RateLimit-Remaining", "0")
 		w.Header().Set("X-RateLimit-Reset", strconv.FormatInt(reset, 10))
-		io.WriteString(w, `{"count":0,"results":[]}`)
+		_, _ = io.WriteString(w, `{"count":0,"results":[]}`)
 	}))
 	defer server.Close()
 
@@ -80,7 +80,7 @@ func TestSearchCachesAnIssueAndDeclinesANameWithoutOne(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&calls, 1)
 		w.Header().Set("X-RateLimit-Remaining", "199")
-		io.WriteString(w, `{"count":1,"results":[{"id":7,"number":"48","title":"Fables","series":{"id":3,"name":"Fables"},"publisher":{"name":"DC Comics"},"cover_date":"2006-06-01"}]}`)
+		_, _ = io.WriteString(w, `{"count":1,"results":[{"id":7,"number":"48","title":"Fables","series":{"id":3,"name":"Fables"},"publisher":{"name":"DC Comics"},"cover_date":"2006-06-01"}]}`)
 	}))
 	defer server.Close()
 

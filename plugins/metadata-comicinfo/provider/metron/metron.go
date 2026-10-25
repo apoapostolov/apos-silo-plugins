@@ -128,7 +128,7 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	p.gate.observe(resp)
 	if resp.StatusCode == http.StatusTooManyRequests {
 		// The cooldown came from the reset header when it was present. Nothing
@@ -170,7 +170,7 @@ func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	p.gate.observe(resp)
 	if resp.StatusCode == http.StatusTooManyRequests {
 		return nil, fmt.Errorf("metron: HTTP 429, backing off for %s", p.gate.remaining())
@@ -205,13 +205,19 @@ func toMatch(issue mnIssue) metadata.Match {
 		}
 		parts := strings.Split(d, "-")
 		if len(parts) >= 1 {
-			fmt.Sscan(parts[0], &m.Year)
+			if parsed, err := strconv.Atoi(parts[0]); err == nil {
+				m.Year = parsed
+			}
 		}
 		if len(parts) >= 2 {
-			fmt.Sscan(parts[1], &m.Month)
+			if parsed, err := strconv.Atoi(parts[1]); err == nil {
+				m.Month = parsed
+			}
 		}
 		if len(parts) >= 3 {
-			fmt.Sscan(parts[2], &m.Day)
+			if parsed, err := strconv.Atoi(parts[2]); err == nil {
+				m.Day = parsed
+			}
 		}
 		break
 	}

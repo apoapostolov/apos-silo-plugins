@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -48,7 +49,7 @@ func New(opts Options) (*Provider, error) {
 		return nil, fmt.Errorf("gcd: open: %w", err)
 	}
 	if err := db.Ping(); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("gcd: ping: %w", err)
 	}
 	return &Provider{opts: opts, db: db}, nil
@@ -85,7 +86,7 @@ func (p *Provider) Download() error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("gcd: dump http %d", resp.StatusCode)
 	}
@@ -95,7 +96,7 @@ func (p *Provider) Download() error {
 		return err
 	}
 	if _, err := io.Copy(f, resp.Body); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err := f.Close(); err != nil {
@@ -125,7 +126,7 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	if err != nil {
 		return nil, fmt.Errorf("gcd: series query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var matches []metadata.Match
 	for rows.Next() {
@@ -211,13 +212,19 @@ func scanIssue(row *sql.Row, db *sql.DB) (*metadata.Match, error) {
 	if keyDate.String != "" {
 		parts := strings.Split(keyDate.String, "-")
 		if len(parts) >= 1 {
-			fmt.Sscan(parts[0], &m.Year)
+			if year, err := strconv.Atoi(parts[0]); err == nil {
+				m.Year = year
+			}
 		}
 		if len(parts) >= 2 {
-			fmt.Sscan(parts[1], &m.Month)
+			if month, err := strconv.Atoi(parts[1]); err == nil {
+				m.Month = month
+			}
 		}
 		if len(parts) >= 3 {
-			fmt.Sscan(parts[2], &m.Day)
+			if day, err := strconv.Atoi(parts[2]); err == nil {
+				m.Day = day
+			}
 		}
 	}
 	// Story titles, genres, synopsis.
@@ -240,7 +247,7 @@ func scanIssue(row *sql.Row, db *sql.DB) (*metadata.Match, error) {
 		JOIN gcd_credit_type ct ON ct.id = sc.credit_type_id
 		WHERE st.issue_id = ?`, id)
 	if err == nil {
-		defer credRows.Close()
+		defer func() { _ = credRows.Close() }()
 		for credRows.Next() {
 			var name, role string
 			if err := credRows.Scan(&name, &role); err == nil {

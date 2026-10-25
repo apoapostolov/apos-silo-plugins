@@ -379,13 +379,6 @@ func yearOf(value string) int {
 	return year
 }
 
-func dateOnly(value string) string {
-	value = strings.TrimSpace(value)
-	if len(value) < 10 {
-		return ""
-	}
-	return value[:10]
-}
 
 func firstNonEmpty(values ...string) string {
 	for _, value := range values {
