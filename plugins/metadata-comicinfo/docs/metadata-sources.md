@@ -1,18 +1,21 @@
 # Metadata sources for western comics
 
 Research into scrapers and metadata providers that could feed the
-`comicinfo-metadata` Silo plugin, beyond the `ComicInfo.xml` already
-embedded in the archive.
+`comicinfo-metadata` Silo plugin. None of the embedded formats below reach the
+running plugin today: `metadata_provider.v1` receives a title, a year, and
+provider IDs, so the plugin cannot open an archive. The list is the survey the
+providers were chosen from, not a description of what is wired.
 
-## Local / offline (no API key, already supported)
+## Local / offline
 
-- **ComicInfo.xml** (Anansi schema) — embedded in CBZ/CBR. Already parsed
-  by `comicinfo/`. Primary source.
+- **ComicInfo.xml** (Anansi schema) — embedded in CBZ/CBR. `comicinfo/` parses
+  it and `cmd/comicinfo/` prints the result, but the provider chain never calls
+  either: the file is unreachable through the current capability.
 - **MetronInfo.xml** — alternative embedded format (Metron project).
 - **ComicBookInfo** (Comic Book Lover) — archive comment JSON.
 - **CoMet** — another embedded format.
 - **Filename parsing** — series/issue/year can be inferred from the file name
-  (ComicTagger/comicbox both do this).
+  (ComicTagger/comicbox both do this). This one runs today.
 
 ## Online providers (require credentials, optional)
 

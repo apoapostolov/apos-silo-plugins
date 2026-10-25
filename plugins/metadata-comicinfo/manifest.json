@@ -5,9 +5,9 @@
   "silo_api_version": "v1",
   "presentation": {
     "display_name": "ComicInfo Metadata",
-    "summary": "Recognize mainstream comics by their embedded ComicInfo.xml and enrich series and issues with metadata, creators, and publication details.",
-    "description_markdown": "Reads the ComicInfo.xml file embedded in CBZ/CBR archives (as defined by the Anansi Project) and maps its fields onto Silo metadata: title, series, number, count, volume, summary, creators, publisher, genres, tags, characters, teams, locations, age rating, and page info.",
-    "setup_markdown": "Install the plugin, then add ComicInfo Metadata to a comic library's provider chain. Embedded ComicInfo.xml is read with no extra setup. Two optional online sources can be enabled:\n\n**ComicVine** \u2014 set `comicvine_api_key` to a free API key from https://comicvine.gamespot.com/api/.\n\n**Grand Comics Database (GCD)** \u2014 the plugin reads the official SQLite dump:\n1. Create a free account at https://www.comics.org and sign in.\n2. Open https://www.comics.org/download/, choose **Private Use**, and copy the SQLite dump link.\n3. Paste that link into `gcd_dump_url`.\n4. Open the browser DevTools, go to **Network**, reload any comics.org page, open the request headers, and copy the value of the **`sessionid`** cookie. Paste it into `gcd_dump_cookie` as `sessionid=<value>`. If the download returns 403 (Cloudflare), paste the whole Cookie header instead, including `cf_clearance` and `csrftoken`.\n5. Set `gcd_dump_path` to where the dump should be saved (for example `/config/gcd.db`) and `gcd_refresh_hours` to how often to refresh it.\n\nThe dump is about 6 GB. The cookie is stored encrypted by Silo.",
+    "summary": "Enrich mainstream comics from a local Grand Comics Database dump, ComicVine, or Metron, with a filename fallback when no source answers.",
+    "description_markdown": "Resolves a comic to its series and issue from a local Grand Comics Database dump, ComicVine, or Metron, falls back to parsing the filename when none of them answer, and maps the result onto Silo metadata: title, series, number, count, volume, summary, creators, publisher, imprint, genres, tags, characters, teams, locations, age rating, and page information.\n\nEmbedded ComicInfo.xml is not read yet. Silo's metadata capability passes a title, a year, and provider IDs, not the archive, so the file inside a CBZ/CBR stays out of reach until a capability that hands over the file exists. The parser and a CLI for it are in the source tree, ready for that step.",
+    "setup_markdown": "Install the plugin, then add ComicInfo Metadata to a comic library's provider chain. The plugin has no bundled data, so configure at least one source:\n\n**ComicVine** — set `comicvine_api_key` to a free API key from https://comicvine.gamespot.com/api/.\n\n**Grand Comics Database (GCD)** — download the official SQLite dump yourself and save it where the plugin can read it:\n1. Create a free account at https://www.comics.org and sign in.\n2. Open https://www.comics.org/download/ and choose **Private Use**.\n3. Download the SQLite dump, unpack it, and place the `.db` file at the path set in `gcd_dump_path` (for example `/config/gcd.db`).\n\nThe dump is about 6 GB and must be refreshed by downloading it again.\n\n**Filename fallback** — with no source configured, the plugin can still read series, issue number, and year out of the file name; enable it with `enable_filename`.",
     "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
     "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
     "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
@@ -35,7 +35,7 @@
       "type": "metadata_provider.v1",
       "id": "comicinfo-metadata",
       "display_name": "ComicInfo Metadata",
-      "description": "Reads embedded ComicInfo.xml from mainstream comic archives to populate metadata, creators, and publication details.",
+      "description": "Finds mainstream comic series and issues in a local Grand Comics Database dump, ComicVine, or Metron, and enriches them with metadata, creators, and publication details.",
       "metadata": {
         "default_priority": {
           "comic": 1
@@ -76,52 +76,6 @@
       }
     },
     {
-      "key": "gcd_dump_url",
-      "title": "GCD dump download URL",
-      "description": "Direct download link for the GCD SQLite dump. Sign in at comics.org, open the Download page, choose Private Use, and copy the SQLite link.",
-      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
-      "admin_form": {
-        "fields": [
-          {
-            "key": "value",
-            "label": "Download URL",
-            "control": "ADMIN_FORM_CONTROL_TEXT"
-          }
-        ]
-      }
-    },
-    {
-      "key": "gcd_dump_cookie",
-      "title": "GCD download cookie",
-      "description": "Cookie header for the authenticated dump download. Log in at comics.org, then in DevTools \u2192 Network \u2192 any comics.org request \u2192 Request Headers, copy the value of the **sessionid** cookie and paste it as sessionid=<value>. If the download returns 403 (Cloudflare), paste the full Cookie header instead, including cf_clearance and csrftoken. Stored encrypted by Silo.",
-      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
-      "admin_form": {
-        "fields": [
-          {
-            "key": "value",
-            "label": "Cookie (sessionid=...)",
-            "control": "ADMIN_FORM_CONTROL_TEXT"
-          }
-        ]
-      }
-    },
-    {
-      "key": "gcd_refresh_hours",
-      "title": "GCD dump refresh (hours)",
-      "description": "How often to re-download the GCD dump when a URL is set. Default 168 (weekly).",
-      "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}}}",
-      "admin_form": {
-        "fields": [
-          {
-            "key": "value",
-            "label": "Hours",
-            "control": "ADMIN_FORM_CONTROL_NUMBER",
-            "default_value": 168
-          }
-        ]
-      }
-    },
-    {
       "key": "enable_comicvine",
       "title": "ComicVine",
       "description": "Query the ComicVine API for issue metadata. Requires a free API key.",
@@ -147,7 +101,8 @@
           {
             "key": "value",
             "label": "API key",
-            "control": "ADMIN_FORM_CONTROL_TEXT"
+            "control": "ADMIN_FORM_CONTROL_PASSWORD",
+            "secret": true
           }
         ]
       }
@@ -178,7 +133,8 @@
           {
             "key": "value",
             "label": "Token",
-            "control": "ADMIN_FORM_CONTROL_TEXT"
+            "control": "ADMIN_FORM_CONTROL_PASSWORD",
+            "secret": true
           }
         ]
       }
