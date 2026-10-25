@@ -120,7 +120,7 @@
     {
       "manifest": {
         "plugin_id": "silo.comicinfo-metadata",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "silo_api_version": "v1",
         "presentation": {
           "display_name": "ComicInfo Metadata",
@@ -280,16 +280,16 @@
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/metadata-comicinfo",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.12/comicinfo-linux-amd64",
-          "checksum": "66d41a261ac52939ce8fffcfa97e91f28da3c0efd6279148ce189dbec23a6fb6"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.13/comicinfo-linux-amd64",
+          "checksum": "fa8235b64203763b98cd71a48b52c1e50f1a8c3229d80b0013b8fb6d87b9fd7f"
         },
         "linux/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.12/comicinfo-linux-arm64",
-          "checksum": "c1ed81de75c0433896da12dbba30c8606141bbadeb45bbee32c931df0acf9bfe"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.13/comicinfo-linux-arm64",
+          "checksum": "33769e04b30d6a95b714c1f63422d9c117a068288a9e613f19f9fc6f9419ecba"
         },
         "darwin/arm64": {
-          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.12/comicinfo-darwin-arm64",
-          "checksum": "cd2d47b9f104a460a6b1b5238a5e0279e55cd1b5e8c6cfcb52ede52a56b5f089"
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.13/comicinfo-darwin-arm64",
+          "checksum": "ff887516536977236a8bb0b7b45ca7f0f986a5b501fbe1daa08f881025f31be8"
         }
       }
     },
