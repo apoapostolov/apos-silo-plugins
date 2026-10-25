@@ -8,10 +8,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/metadata"
-	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/provider"
 	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
 	"github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtime"
+	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/metadata"
+	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-comicinfo/provider"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -192,23 +192,23 @@ func metadataItem(match metadata.Match) (*pluginv1.MetadataItem, error) {
 		return nil, err
 	}
 	extra, err := structpb.NewStruct(map[string]any{
-		"series":       strings.TrimSpace(match.Series),
-		"number":       strings.TrimSpace(match.Number),
-		"count":        strings.TrimSpace(match.Count),
-		"volume":       strings.TrimSpace(match.Volume),
-		"publisher":    strings.TrimSpace(match.Publisher),
-		"imprint":      strings.TrimSpace(match.Imprint),
-		"tags":         stringsOrEmpty(match.Tags),
-		"characters":   stringsOrEmpty(match.Characters),
-		"teams":        stringsOrEmpty(match.Teams),
-		"locations":    stringsOrEmpty(match.Locations),
-		"creators":     stringsOrEmpty(match.Creators),
-		"age_rating":   strings.TrimSpace(match.AgeRating),
-		"page_count":   match.PageCount,
-		"gtin":         strings.TrimSpace(match.GTIN),
-		"isbn":         strings.TrimSpace(match.ISBN),
-		"language":     strings.TrimSpace(match.Language),
-		"confidence":   match.Confidence,
+		"series":     strings.TrimSpace(match.Series),
+		"number":     strings.TrimSpace(match.Number),
+		"count":      strings.TrimSpace(match.Count),
+		"volume":     strings.TrimSpace(match.Volume),
+		"publisher":  strings.TrimSpace(match.Publisher),
+		"imprint":    strings.TrimSpace(match.Imprint),
+		"tags":       stringsOrEmpty(match.Tags),
+		"characters": stringsOrEmpty(match.Characters),
+		"teams":      stringsOrEmpty(match.Teams),
+		"locations":  stringsOrEmpty(match.Locations),
+		"creators":   stringsOrEmpty(match.Creators),
+		"age_rating": strings.TrimSpace(match.AgeRating),
+		"page_count": match.PageCount,
+		"gtin":       strings.TrimSpace(match.GTIN),
+		"isbn":       strings.TrimSpace(match.ISBN),
+		"language":   strings.TrimSpace(match.Language),
+		"confidence": match.Confidence,
 	})
 	if err != nil {
 		return nil, err
