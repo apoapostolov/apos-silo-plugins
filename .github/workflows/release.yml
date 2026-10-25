@@ -60,33 +60,7 @@ jobs:
           fi
           echo "All nine assets present."
 
-      - name: The catalog points at this tag
-        env:
-          TAG: ${{ steps.ref.outputs.tag }}
-        run: |
-          set -euo pipefail
-          python3 - "$TAG" <<'PY'
-          import json
-          import sys
-
-          tag = sys.argv[1]
-          catalog = json.load(open("repository.json", encoding="utf-8"))
-          bad = []
-          for entry in catalog.get("plugins", []):
-              plugin_id = entry.get("manifest", {}).get("plugin_id", "?")
-              urls = [v.get("url", "") for v in entry.get("versions", [])]
-              if not urls:
-                  urls = [a.get("url", "") for a in entry.get("assets", [])]
-              if not any("/" + tag + "/" in url for url in urls):
-                  bad.append((plugin_id, urls))
-          if bad:
-              for plugin_id, urls in bad:
-                  print(plugin_id, urls)
-              raise SystemExit("catalog does not point at " + tag)
-          print("catalog points at " + tag)
-          PY
-
-      - name: Embedded manifests match the tagged source
+      - name: Download the linux binaries
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.ref.outputs.tag }}
@@ -95,6 +69,62 @@ jobs:
           mkdir -p downloaded
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir downloaded --pattern '*-linux-amd64'
           chmod +x downloaded/*
+          ls downloaded
+
+      - name: The catalog matches the release
+        env:
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 - "$TAG" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          tag = sys.argv[1]
+          catalog = json.load(open("repository.json", encoding="utf-8"))
+          prefix = {
+              "silo.comicinfo-metadata": "comicinfo",
+              "community.watchprovider.trakt": "trakt",
+              "silo.apple-podcasts-metadata": "apple-podcasts",
+          }
+          problems = []
+          for entry in catalog.get("plugins", []):
+              plugin_id = entry.get("manifest", {}).get("plugin_id", "")
+              binaries = entry.get("binaries") or {}
+              if plugin_id not in prefix:
+                  problems.append(f"{plugin_id}: unknown plugin in the catalog")
+                  continue
+              for platform in ("linux/amd64", "linux/arm64", "darwin/arm64"):
+                  info = binaries.get(platform)
+                  if not info:
+                      problems.append(f"{plugin_id}: catalog has no {platform} binary")
+                      continue
+                  url = info.get("url", "")
+                  if f"/{tag}/" not in url:
+                      problems.append(f"{plugin_id} {platform}: catalog points at {url}")
+              local = pathlib.Path("downloaded") / f"{prefix[plugin_id]}-linux-amd64"
+              expected = (binaries.get("linux/amd64") or {}).get("checksum")
+              if local.exists() and expected:
+                  digest = hashlib.sha256(local.read_bytes()).hexdigest()
+                  if digest != expected:
+                      problems.append(
+                          f"{plugin_id}: published binary is {digest}, catalog says {expected}"
+                      )
+          if problems:
+              for problem in problems:
+                  print(problem)
+              raise SystemExit(1)
+          print("catalog, tag and binary checksums agree")
+          PY
+
+      - name: Embedded manifests match the tagged source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
           status=0
           check() {
             binary="$1"
