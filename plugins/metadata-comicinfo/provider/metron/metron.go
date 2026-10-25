@@ -63,9 +63,24 @@ type mnResponse struct {
 
 type Provider struct {
 	client *Client
+	gate   *gate
+	cache  *cache
 }
 
-func NewProvider(token string) *Provider { return &Provider{client: New(token)} }
+func NewProvider(token string) *Provider {
+	return &Provider{client: New(token), gate: newGate(minSpacing), cache: newCache()}
+}
+
+// limits lazily fills the gate so a provider built with a bare client still
+// paces itself.
+func (p *Provider) limits() {
+	if p.gate == nil {
+		p.gate = newGate(minSpacing)
+	}
+	if p.cache == nil {
+		p.cache = newCache()
+	}
+}
 
 func NewMetron(token string) metadata.Provider { return NewProvider(token) }
 
@@ -75,6 +90,7 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	if p.client.Token == "" {
 		return nil, fmt.Errorf("metron: missing token")
 	}
+	p.limits()
 	title := q.Series
 	if title == "" {
 		title = q.Title
@@ -86,6 +102,13 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	// asking anyway spends a rate-limited budget on nothing.
 	if strings.TrimSpace(q.Number) == "" {
 		return nil, nil
+	}
+	cacheKey := fmt.Sprintf("search|%s|%s|%d", title, q.Number, q.Year)
+	if cached, ok := p.cache.get(cacheKey); ok {
+		return cached, nil
+	}
+	if ok, wait := p.gate.take(); !ok {
+		return nil, fmt.Errorf("metron: rate limit cooldown, retry in %s", wait.Round(time.Second))
 	}
 	params := url.Values{}
 	params.Set("series_name", title)
@@ -106,6 +129,13 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	p.gate.observe(resp)
+	if resp.StatusCode == http.StatusTooManyRequests {
+		// The cooldown came from the reset header when it was present. Nothing
+		// retries immediately: this error reaches the host as transient, and the
+		// next call is refused locally until the server's window reopens.
+		return nil, fmt.Errorf("metron: HTTP 429, backing off for %s", p.gate.remaining())
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("metron: http %d", resp.StatusCode)
 	}
@@ -117,12 +147,17 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	for _, issue := range r.Results {
 		out = append(out, toMatch(issue))
 	}
+	p.cache.put(cacheKey, out)
 	return out, nil
 }
 
 func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
 	if p.client.Token == "" {
 		return nil, fmt.Errorf("metron: missing token")
+	}
+	p.limits()
+	if ok, wait := p.gate.take(); !ok {
+		return nil, fmt.Errorf("metron: rate limit cooldown, retry in %s", wait.Round(time.Second))
 	}
 	id := strings.TrimPrefix(providerID, "metron:")
 	req, err := http.NewRequest("GET", p.client.BaseURL+"/issue/"+id+"/", nil)
@@ -136,6 +171,10 @@ func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	p.gate.observe(resp)
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return nil, fmt.Errorf("metron: HTTP 429, backing off for %s", p.gate.remaining())
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("metron: http %d", resp.StatusCode)
 	}

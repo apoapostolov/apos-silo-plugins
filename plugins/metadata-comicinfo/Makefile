@@ -2,7 +2,7 @@
 
 BINARY=plugin
 PLATFORMS=linux/amd64 linux/arm64 darwin/arm64
-VERSION ?= 0.1.10
+VERSION ?= 0.1.11
 LDFLAGS=-s -w -X main.version=$(VERSION)
 
 build:

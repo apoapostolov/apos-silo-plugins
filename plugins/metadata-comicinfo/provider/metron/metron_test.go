@@ -26,6 +26,7 @@ func TestSearchAndFetch(t *testing.T) {
 	defer srv.Close()
 
 	p := NewProviderWithClient(&Client{Token: "tok", BaseURL: srv.URL, HTTPClient: srv.Client()})
+	p.gate = newGate(0) // search then fetch back to back, without the 1s spacing
 	matches, err := p.Search(metadata.SearchQuery{Series: "Metron Series", Number: "2"})
 	if err != nil {
 		t.Fatalf("search: %v", err)
