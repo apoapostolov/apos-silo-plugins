@@ -99,3 +99,31 @@ func TestParseHandlesDirectoriesAndUnicode(t *testing.T) {
 		t.Fatalf("got series=%q number=%q year=%d", series, number, year)
 	}
 }
+
+// The title a candidate is offered under is what the host scores against the
+// item's own title. Echoing the archive name scores 0.17 against "Fables 048",
+// which is below the host's 0.5 admission bar; the parsed title scores 0.62.
+func TestSearchPresentsTheParsedTitle(t *testing.T) {
+	cases := []struct {
+		file  string
+		title string
+	}{
+		{"/mnt/media/comics/western/Fables/Fables 048 (2015) (Digital) (Zone-Empire).cbz", "Fables 048"},
+		{"Saga #54.cbr", "Saga 54"},
+		{"Saga (2012).cbz", "Saga"},
+		{"Collected Works (Digital) (TPB).cbz", "Collected Works"},
+	}
+	p := New()
+	for _, c := range cases {
+		matches, err := p.Search(metadata.SearchQuery{Filename: c.file})
+		if err != nil {
+			t.Fatalf("%s: %v", c.file, err)
+		}
+		if len(matches) != 1 {
+			t.Fatalf("%s: got %d matches", c.file, len(matches))
+		}
+		if got := matches[0].Title; got != c.title {
+			t.Errorf("%s: title = %q, want %q", c.file, got, c.title)
+		}
+	}
+}

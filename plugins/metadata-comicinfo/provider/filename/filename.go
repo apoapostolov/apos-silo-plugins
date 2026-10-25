@@ -117,9 +117,13 @@ func Parse(name string) (series, number string, year int) {
 }
 
 // cleanSeries trims the separators a name keeps after the issue number is cut
-// away, and folds the dash variants into a plain hyphen.
+// away, folds the dash variants into a plain hyphen, and drops the bracketed
+// release tags ("(Digital)", "(TPB)", "(Zone-Empire)") that are never part of a
+// series name. A year is removed before this runs, so what is left in brackets
+// is packaging.
 func cleanSeries(value string) string {
 	value = strings.NewReplacer("–", "-", "—", "-").Replace(value)
+	value = releaseTagRe.ReplaceAllString(value, " ")
 	value = strings.Trim(value, " ._-#,")
 	value = strings.Join(strings.Fields(value), " ")
 	return strings.TrimSpace(value)
@@ -139,7 +143,7 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	match := metadata.Match{
 		Provider:   "filename",
 		ProviderID: "filename:" + base,
-		Title:      strings.Join(strings.Fields(base), " "),
+		Title:      presentationTitle(series, number, base),
 		Series:     series,
 		Number:     number,
 		Year:       year,
@@ -147,6 +151,25 @@ func (p *Provider) Search(q metadata.SearchQuery) ([]metadata.Match, error) {
 	}
 	return []metadata.Match{match}, nil
 }
+
+// presentationTitle is the name a parsed file is offered under. The host scores
+// a candidate against its own item title, which it derives from the same name,
+// so echoing the raw archive name ("Fables 048 (2015) (Digital) (Zone-Empire)")
+// scores far below the title the parse produced ("Fables 048"). When the parse
+// finds nothing, the release tags are stripped from the fallback.
+func presentationTitle(series, number, base string) string {
+	if series = strings.TrimSpace(series); series != "" {
+		if number = strings.TrimSpace(number); number != "" {
+			return series + " " + number
+		}
+		return series
+	}
+	return cleanSeries(releaseTagRe.ReplaceAllString(base, " "))
+}
+
+// releaseTagRe matches the bracketed groups a release name carries: the year,
+// "(Digital)", "(TPB)", "(Zone-Empire)".
+var releaseTagRe = regexp.MustCompile(`[\(\[]\s*[^\)\]]*\s*[\)\]]`)
 
 func (p *Provider) Fetch(string) (*metadata.Match, error) { return nil, nil }
 func (p *Provider) Close() error                          { return nil }
