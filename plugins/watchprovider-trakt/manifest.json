@@ -1,6 +1,6 @@
 {
   "plugin_id": "community.watchprovider.trakt",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "checksum": "__CHECKSUM__",
   "silo_api_version": "v1",
   "supported_platforms": [
@@ -25,7 +25,7 @@
       "description": "Two-way watch history, resume progress, favorites, watchlist, movie and show ratings, and dropped shows, plus live scrobbling, for Trakt accounts.",
       "watch_sync_provider": {
         "auth_methods": [
-          "WATCH_SYNC_AUTH_METHOD_DEVICE_CODE"
+          3
         ],
         "export_watched": true,
         "export_unwatched": true,
@@ -42,9 +42,9 @@
         "export_ratings": true,
         "sync_dropped": true,
         "supported_media_types": [
-          "WATCH_SYNC_MEDIA_TYPE_MOVIE",
-          "WATCH_SYNC_MEDIA_TYPE_EPISODE",
-          "WATCH_SYNC_MEDIA_TYPE_SERIES"
+          1,
+          2,
+          3
         ],
         "external_id_namespaces": [
           "imdb",
