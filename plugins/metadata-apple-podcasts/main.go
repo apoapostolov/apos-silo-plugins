@@ -17,9 +17,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-apple-podcasts/provider/apple"
 	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
 	"github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtime"
+	"github.com/apoapostolov/apos-silo-plugins/plugins/metadata-apple-podcasts/provider/apple"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -378,7 +378,6 @@ func yearOf(value string) int {
 	}
 	return year
 }
-
 
 func firstNonEmpty(values ...string) string {
 	for _, value := range values {

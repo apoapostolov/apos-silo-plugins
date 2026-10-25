@@ -8,7 +8,7 @@ import (
 func TestNormalizeTitle(t *testing.T) {
 	cases := map[string]string{
 		"Turncloaks - D&D5E Dark Fantasy Actual Play": "turncloaks d and d5e dark fantasy actual play",
-		"  The Magnus   Archives ":                     "the magnus archives",
+		"  The Magnus   Archives ":                    "the magnus archives",
 		"WOE.BEGONE":                                  "woe begone",
 		"Tale of The Manticore, a Dark Fantasy Dungeons & Dragons Audiodrama": "tale of the manticore a dark fantasy dungeons and dragons audiodrama",
 	}

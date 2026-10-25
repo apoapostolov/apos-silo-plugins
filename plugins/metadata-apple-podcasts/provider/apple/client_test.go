@@ -211,7 +211,7 @@ func TestCollectionIDParsing(t *testing.T) {
 	cases := map[string]string{
 		"1095138637": "1095138637",
 		"https://podcasts.apple.com/us/podcast/x/id1095138637": "1095138637",
-		"id1542792309": "1542792309",
+		"id1542792309":                 "1542792309",
 		"https://example.test/nothing": "",
 		"not-an-id":                    "",
 	}
