@@ -127,3 +127,28 @@ func TestSearchPresentsTheParsedTitle(t *testing.T) {
 		}
 	}
 }
+
+// The host admits a candidate and then fetches its metadata by provider id.
+func TestFetchServesTheSameParse(t *testing.T) {
+	p := New()
+	matches, err := p.Search(metadata.SearchQuery{Filename: "Fables 048 (2015) (Digital) (Zone-Empire).cbz"})
+	if err != nil || len(matches) != 1 {
+		t.Fatalf("search: %v %d", err, len(matches))
+	}
+	offered := matches[0]
+
+	fetched, err := p.Fetch(offered.ProviderID)
+	if err != nil {
+		t.Fatalf("fetch: %v", err)
+	}
+	if fetched == nil {
+		t.Fatal("fetch returned nothing for its own provider id")
+	}
+	if fetched.Title != offered.Title || fetched.Series != offered.Series || fetched.Number != offered.Number || fetched.Year != offered.Year {
+		t.Fatalf("fetch = %+v, want the parse of %+v", fetched, offered)
+	}
+
+	if unknown, err := p.Fetch("gcd:123"); err != nil || unknown != nil {
+		t.Fatalf("a foreign provider id must answer nothing, got %+v %v", unknown, err)
+	}
+}

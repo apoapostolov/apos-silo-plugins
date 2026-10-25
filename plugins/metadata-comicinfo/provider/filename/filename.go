@@ -171,5 +171,22 @@ func presentationTitle(series, number, base string) string {
 // "(Digital)", "(TPB)", "(Zone-Empire)".
 var releaseTagRe = regexp.MustCompile(`[\(\[]\s*[^\)\]]*\s*[\)\]]`)
 
-func (p *Provider) Fetch(string) (*metadata.Match, error) { return nil, nil }
-func (p *Provider) Close() error                          { return nil }
+func (p *Provider) Fetch(providerID string) (*metadata.Match, error) {
+	// The host admits a candidate and then asks for its metadata by provider id.
+	// Answering nothing leaves the item "matched" with no fields written, so the
+	// parse has to be served back under the id it was offered with.
+	name := strings.TrimPrefix(strings.TrimSpace(providerID), "filename:")
+	if name == "" || name == strings.TrimSpace(providerID) {
+		return nil, nil
+	}
+	matches, err := p.Search(metadata.SearchQuery{Filename: name})
+	if err != nil {
+		return nil, err
+	}
+	if len(matches) == 0 {
+		return nil, nil
+	}
+	return &matches[0], nil
+}
+
+func (p *Provider) Close() error { return nil }
