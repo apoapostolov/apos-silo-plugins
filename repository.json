@@ -445,7 +445,20 @@
         }
       },
       "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/silo-prerolls",
-      "binaries": {}
+      "binaries": {
+        "darwin/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.15/prerolls-darwin-arm64",
+          "checksum": "43f4f118d3ee14a5b13e9935978e5b5b9f3d5948c027b1516f82eb382963fca7"
+        },
+        "linux/amd64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.15/prerolls-linux-amd64",
+          "checksum": "820d2a7f650f860da0515514dc8e0a4409f05e23523e777181b27a33fb06270d"
+        },
+        "linux/arm64": {
+          "url": "https://github.com/apoapostolov/apos-silo-plugins/releases/download/v1.0.15/prerolls-linux-arm64",
+          "checksum": "d7ead628fa316a5906f79182850f81e0cbcaf8b7c9c714618ae5ab9050b0c491"
+        }
+      }
     }
   ]
 }
