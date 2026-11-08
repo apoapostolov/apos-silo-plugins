@@ -7,8 +7,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
-	"time"
 	goruntime "runtime"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 
@@ -92,12 +92,12 @@ func main() {
 	pool := &preroll.PrerollPool{}
 	engine := preroll.NewEngine(preroll.SelectionMode(cfg.SelectionMode), cfg.CooldownHours)
 	engine.Config = &preroll.ConfigRef{
-		CooldownHours:   cfg.CooldownHours,
-		MaturityGating:  cfg.MaturityGating,
-		SessionMode:     cfg.SessionMode,
-		PerUserRules:    make(map[string]preroll.UserRuleRef),
-		LibraryRules:    []preroll.LibraryRuleRef{},
-		OptOuts:         cfg.OptOuts,
+		CooldownHours:  cfg.CooldownHours,
+		MaturityGating: cfg.MaturityGating,
+		SessionMode:    cfg.SessionMode,
+		PerUserRules:   make(map[string]preroll.UserRuleRef),
+		LibraryRules:   []preroll.LibraryRuleRef{},
+		OptOuts:        cfg.OptOuts,
 	}
 	for k, v := range cfg.PerUserRules {
 		engine.Config.PerUserRules[k] = preroll.UserRuleRef{Mode: v.Mode, Users: v.Users}

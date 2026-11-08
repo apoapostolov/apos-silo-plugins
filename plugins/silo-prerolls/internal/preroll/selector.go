@@ -9,19 +9,19 @@ import (
 type SelectionMode string
 
 const (
-	ModeRandom          SelectionMode = "random"
-	ModeSequential      SelectionMode = "sequential"
-	ModeWeighted        SelectionMode = "weighted"
-	ModeEqualRotation   SelectionMode = "equal_rotation"
-	ModeRecencyBoost    SelectionMode = "recency_boost"
+	ModeRandom        SelectionMode = "random"
+	ModeSequential    SelectionMode = "sequential"
+	ModeWeighted      SelectionMode = "weighted"
+	ModeEqualRotation SelectionMode = "equal_rotation"
+	ModeRecencyBoost  SelectionMode = "recency_boost"
 )
 
 // Selector handles preroll selection logic.
 type Selector struct {
-	mode         SelectionMode
-	cooldownHrs  int
-	cooldownMap  map[string]time.Time // itemID -> last played time
-	playCounts   map[string]int       // prerollID -> play count
+	mode          SelectionMode
+	cooldownHrs   int
+	cooldownMap   map[string]time.Time // itemID -> last played time
+	playCounts    map[string]int       // prerollID -> play count
 	sequentialIdx int
 }
 

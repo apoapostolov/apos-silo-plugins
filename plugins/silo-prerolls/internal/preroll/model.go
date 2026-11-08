@@ -30,7 +30,7 @@ type Schedule struct {
 // PrerollPool holds all discovered prerolls.
 type PrerollPool struct {
 	Prerolls []Preroll `json:"prerolls"`
-	LastScan time.Time  `json:"last_scan"`
+	LastScan time.Time `json:"last_scan"`
 }
 
 // IsScheduled checks if the preroll is active based on its schedule.

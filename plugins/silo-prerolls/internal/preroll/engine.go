@@ -9,21 +9,21 @@ import (
 type Engine struct {
 	Selector     *Selector
 	Config       *ConfigRef
-	Cooldowns    map[string]time.Time // itemID_prerollID -> last played
-	PlayCounts   map[string]int       // prerollID -> total plays
+	Cooldowns    map[string]time.Time      // itemID_prerollID -> last played
+	PlayCounts   map[string]int            // prerollID -> total plays
 	UserPlays    map[string]map[string]int // userID -> prerollID -> plays
-	SessionState map[string]*Session  // userID -> session state
-	OptOuts      map[string]bool      // itemID -> opted out
+	SessionState map[string]*Session       // userID -> session state
+	OptOuts      map[string]bool           // itemID -> opted out
 }
 
 // ConfigRef holds the configuration needed by the engine.
 type ConfigRef struct {
-	CooldownHours   int
-	MaturityGating  bool
-	SessionMode     string
-	PerUserRules    map[string]UserRuleRef
-	LibraryRules    []LibraryRuleRef
-	OptOuts         []string
+	CooldownHours  int
+	MaturityGating bool
+	SessionMode    string
+	PerUserRules   map[string]UserRuleRef
+	LibraryRules   []LibraryRuleRef
+	OptOuts        []string
 }
 
 type UserRuleRef struct {
