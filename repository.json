@@ -394,6 +394,21 @@
         "version": "0.1.0",
         "checksum": "__CHECKSUM__",
         "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          }
+        ],
+        "category": "media",
         "capabilities": [
           {
             "type": "http_routes.v1",
@@ -414,6 +429,7 @@
             "description": "Listen for playback events to track stats and manage cooldowns."
           }
         ],
+        "global_config_schema": [],
         "presentation": {
           "display_name": "Prerolls (Cinema Mode)",
           "summary": "Play pre-roll videos before movies and TV episodes. Folder-based, smart selection, seasonal scheduling.",
@@ -422,6 +438,9 @@
           "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
           "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/silo-prerolls",
           "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
+          "changelog_url": "https://github.com/apoapostolov/apos-silo-plugins/releases",
+          "publisher_name": "Apostol Apostolov",
+          "publisher_url": "https://github.com/apoapostolov",
           "license_spdx": "MIT"
         }
       },
