@@ -387,6 +387,46 @@
           "checksum": "99529d710a7b31b2e99d7cf969106f6b20cab6e38dda4b4d97654a0aaf717dc4"
         }
       }
+    },
+    {
+      "manifest": {
+        "plugin_id": "apoapostolov.silo-prerolls",
+        "version": "0.1.0",
+        "checksum": "__CHECKSUM__",
+        "silo_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "prerolls-api",
+            "display_name": "Prerolls API",
+            "description": "HTTP endpoints for preroll discovery, configuration, and stats."
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "prerolls-scan",
+            "display_name": "Preroll Folder Scan",
+            "description": "Periodic scan of configured preroll folders."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "prerolls-events",
+            "display_name": "Preroll Events",
+            "description": "Listen for playback events to track stats and manage cooldowns."
+          }
+        ],
+        "presentation": {
+          "display_name": "Prerolls (Cinema Mode)",
+          "summary": "Play pre-roll videos before movies and TV episodes. Folder-based, smart selection, seasonal scheduling.",
+          "description_markdown": "A Silo plugin that plays pre-roll videos before movies and TV episodes, inspired by Jellyfin's Cinema Mode and Projectionist plugins. Features folder-based discovery, 5 selection strategies, smart selection (cooldown, maturity gating, per-user rules, session modes), seasonal scheduling, skippable prerolls, post-rolls, stats tracking, and NeXroll integration.",
+          "setup_markdown": "1. Install the plugin.\n2. Configure preroll folders in the admin UI.\n3. Add preroll video files to the configured folders.\n4. Optionally add sidecar metadata (.json) for tags, weights, and schedules.\n5. Enable Cinema Trailers in client settings.",
+          "homepage_url": "https://github.com/apoapostolov/apos-silo-plugins",
+          "source_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/silo-prerolls",
+          "support_url": "https://github.com/apoapostolov/apos-silo-plugins/issues",
+          "license_spdx": "MIT"
+        }
+      },
+      "repo_url": "https://github.com/apoapostolov/apos-silo-plugins/tree/main/plugins/silo-prerolls",
+      "binaries": {}
     }
   ]
 }

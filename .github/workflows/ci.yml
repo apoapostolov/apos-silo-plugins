@@ -23,6 +23,7 @@ jobs:
           - metadata-comicinfo
           - watchprovider-trakt
           - metadata-apple-podcasts
+          - silo-prerolls
     defaults:
       run:
         working-directory: plugins/${{ matrix.plugin }}
@@ -80,6 +81,7 @@ jobs:
           - metadata-comicinfo
           - watchprovider-trakt
           - metadata-apple-podcasts
+          - silo-prerolls
     steps:
       - uses: actions/checkout@v6
 

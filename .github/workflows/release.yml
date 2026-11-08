@@ -51,7 +51,8 @@ jobs:
           expected="$(printf '%s\n' \
             apple-podcasts-darwin-arm64 apple-podcasts-linux-amd64 apple-podcasts-linux-arm64 \
             comicinfo-darwin-arm64 comicinfo-linux-amd64 comicinfo-linux-arm64 \
-            trakt-darwin-arm64 trakt-linux-amd64 trakt-linux-arm64 | sort)"
+            trakt-darwin-arm64 trakt-linux-amd64 trakt-linux-arm64 \
+            prerolls-darwin-arm64 prerolls-linux-amd64 prerolls-linux-arm64 | sort)"
           actual="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | sort)"
           if [ "$expected" != "$actual" ]; then
             echo "Asset list does not match what a Silo server installs."
@@ -89,6 +90,7 @@ jobs:
               "silo.comicinfo-metadata": "comicinfo",
               "community.watchprovider.trakt": "trakt",
               "silo.apple-podcasts-metadata": "apple-podcasts",
+              "apoapostolov.silo-prerolls": "prerolls",
           }
           problems = []
           for entry in catalog.get("plugins", []):
@@ -151,4 +153,5 @@ jobs:
           check comicinfo-linux-amd64 plugins/metadata-comicinfo/manifest.json || status=1
           check trakt-linux-amd64 plugins/watchprovider-trakt/manifest.json || status=1
           check apple-podcasts-linux-amd64 plugins/metadata-apple-podcasts/manifest.json || status=1
+          check prerolls-linux-amd64 plugins/silo-prerolls/manifest.json || status=1
           exit "$status"
