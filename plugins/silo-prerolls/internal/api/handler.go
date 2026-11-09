@@ -146,10 +146,7 @@ func (h *Handler) discover(req *pluginv1.HandleHTTPRequest) *pluginv1.HandleHTTP
 		}
 	}
 
-	var pool []preroll.Preroll
-	for _, p := range h.Pool.Prerolls {
-		pool = append(pool, p)
-	}
+	pool := append([]preroll.Preroll(nil), h.Pool.Prerolls...)
 
 	// Filter pool based on rules
 	filtered := h.Engine.FilterPool(pool, itemID, "", "", "", "", nil)
